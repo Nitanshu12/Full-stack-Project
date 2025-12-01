@@ -3,7 +3,8 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const connectDB = require('./config/db')
-const router = require('./routes/authRoutes.js')
+const authRouter = require('./routes/authRoutes.js')
+const projectRouter = require('./routes/projectRoutes.js')
 
 
 const app = express()
@@ -14,7 +15,8 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
-app.use("/api",router)
+app.use("/api", authRouter)
+app.use("/api/project", projectRouter)
 
 const PORT = 8080 || process.env.PORT
 

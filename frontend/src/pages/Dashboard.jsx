@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { axiosPrivate } from '../api/axios';
 import {
     FiBell,
     FiLogOut,
@@ -38,10 +40,10 @@ const actionCards = [
     }
 ];
 
-const statCards = [
+const getStatCards = (activeProjectsCount) => [
     {
         label: 'Active Projects',
-        value: 0,
+        value: activeProjectsCount,
         icon: FiFolder,
         color: 'text-purple-600'
     },
@@ -90,11 +92,43 @@ const quickLinks = [
 const Dashboard = () => {
     const { auth, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [activeProjectsCount, setActiveProjectsCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch project stats
+    const fetchProjectStats = async () => {
+        try {
+            const response = await axiosPrivate.get('/project/stats');
+            if (response.data.success) {
+                setActiveProjectsCount(response.data.data.activeProjects || 0);
+            }
+        } catch (err) {
+            console.error('Error fetching project stats:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProjectStats();
+    }, []);
+
+    // Refresh stats when returning from create project page
+    useEffect(() => {
+        if (location.state?.projectCreated) {
+            fetchProjectStats();
+            // Clear the state to prevent unnecessary refetches
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const handleLogout = async () => {
         await logout();
         navigate('/login');
     };
+
+    const statCards = getStatCards(activeProjectsCount);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -152,10 +186,15 @@ const Dashboard = () => {
                             {actionCards.map((card) => (
                                 <button
                                     key={card.title}
-                                    className={`flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all ${
+                                    onClick={() => {
+                                        if (card.title === 'Create Project') {
+                                            navigate('/create-project');
+                                        }
+                                    }}
+                                    className={`flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all cursor-pointer ${
                                         card.highlight
-                                            ? 'bg-gradient-to-r from-purple-600 to-blue-500 text-white border-transparent shadow-lg shadow-purple-200/60'
-                                            : 'bg-white border-gray-200 text-gray-900 hover:border-purple-400'
+                                            ? 'bg-gradient-to-r from-purple-600 to-blue-500 text-white border-transparent shadow-lg shadow-purple-200/60 pointer-cursor'
+                                            : 'bg-white border-gray-200 text-gray-900 hover:border-purple-400 pointer-cursor'
                                     }`}
                                 >
                                     <div className="flex items-center gap-3">

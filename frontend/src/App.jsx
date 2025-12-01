@@ -4,6 +4,7 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import CreateProject from './pages/CreateProject';
 
 const ProtectedRoute = ({ children }) => {
     const { auth, loading } = useAuth();
@@ -30,6 +31,14 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <Dashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/create-project"
+                element={
+                    <ProtectedRoute>
+                        <CreateProject />
                     </ProtectedRoute>
                 }
             />
