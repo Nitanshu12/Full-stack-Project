@@ -36,7 +36,8 @@ const actionCards = [
     {
         title: 'Browse Projects',
         icon: FiFolder,
-        description: 'See what others are building'
+        description: 'See what others are building',
+        navigate: '/discover-projects'
     }
 ];
 
@@ -146,7 +147,12 @@ const Dashboard = () => {
                     </div>
 
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                        <button className="hover:text-purple-600 transition-colors">Projects</button>
+                        <button 
+                            onClick={() => navigate('/discover-projects')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Projects
+                        </button>
                         <button className="hover:text-purple-600 transition-colors">Find Teammates</button>
                         <button className="hover:text-purple-600 transition-colors">Mentorship</button>
                         <button className="hover:text-purple-600 transition-colors">Feed</button>
@@ -189,6 +195,8 @@ const Dashboard = () => {
                                     onClick={() => {
                                         if (card.title === 'Create Project') {
                                             navigate('/create-project');
+                                        } else if (card.navigate) {
+                                            navigate(card.navigate);
                                         }
                                     }}
                                     className={`flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all cursor-pointer ${

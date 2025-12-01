@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import CreateProject from './pages/CreateProject';
+import DiscoverProjects from './pages/DiscoverProjects';
 
 const ProtectedRoute = ({ children }) => {
     const { auth, loading } = useAuth();
@@ -39,6 +40,14 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <CreateProject />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/discover-projects"
+                element={
+                    <ProtectedRoute>
+                        <DiscoverProjects />
                     </ProtectedRoute>
                 }
             />
