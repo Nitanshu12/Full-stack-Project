@@ -1,21 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-<<<<<<< HEAD
-=======
-import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
->>>>>>> fd546c8a6aa631f2d6ec624f6c4874604d4835b4
 
 const Signup = () => {
     const [data, setData] = useState({
         name: "",
         email: "",
-<<<<<<< HEAD
         password: ""
-=======
-        password: "",
-        confirmPassword: ""
->>>>>>> fd546c8a6aa631f2d6ec624f6c4874604d4835b4
     });
     const [error, setError] = useState("");
     const { signup } = useAuth();
@@ -30,14 +21,6 @@ const Signup = () => {
         e.preventDefault();
         setError("");
 
-<<<<<<< HEAD
-=======
-        if (data.password !== data.confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
-
->>>>>>> fd546c8a6aa631f2d6ec624f6c4874604d4835b4
         try {
             const res = await signup(data.name, data.email, data.password);
             if (res.success) {
@@ -50,7 +33,6 @@ const Signup = () => {
         }
     };
 
-<<<<<<< HEAD
     const handleGoogleSignIn = () => {
         // TODO: Implement Google sign-in
         console.log("Google sign-in clicked");
@@ -164,96 +146,6 @@ const Signup = () => {
                             </Link>
                         </div>
                     </div>
-=======
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-4">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all hover:scale-[1.01]">
-                <div className="text-center mb-8">
-                    <h2 className="text-4xl font-bold text-white mb-2 tracking-tight">Create Account</h2>
-                    <p className="text-gray-300">Join us and start your journey</p>
-                </div>
-
-                {error && (
-                    <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-2 rounded-lg mb-6 text-sm text-center">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaUser className="text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                        </div>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Full Name"
-                            value={data.name}
-                            onChange={handleChange}
-                            required
-                            className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all"
-                        />
-                    </div>
-
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaEnvelope className="text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                        </div>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Email Address"
-                            value={data.email}
-                            onChange={handleChange}
-                            required
-                            className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all"
-                        />
-                    </div>
-
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaLock className="text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                        </div>
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            value={data.password}
-                            onChange={handleChange}
-                            required
-                            className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all"
-                        />
-                    </div>
-
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaLock className="text-gray-400 group-focus-within:text-purple-400 transition-colors" />
-                        </div>
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            value={data.confirmPassword}
-                            onChange={handleChange}
-                            required
-                            className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/50 text-white placeholder-gray-500 transition-all"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-lg transform transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                    >
-                        Sign Up
-                    </button>
-                </form>
-
-                <div className="mt-8 text-center text-gray-400 text-sm">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
-                        Log In
-                    </Link>
->>>>>>> fd546c8a6aa631f2d6ec624f6c4874604d4835b4
                 </div>
             </div>
         </div>

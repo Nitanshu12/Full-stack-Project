@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useNavigate } from 'react-router-dom';
 import HeroImage from '../assets/Hero-capstone.png';
 
@@ -121,57 +120,6 @@ const Home = () => {
                     </div>
                 </div>
             </section>
-=======
-import useAuth from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-
-const Home = () => {
-    const { auth, logout } = useAuth();
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-900 text-white p-8">
-            <div className="max-w-4xl mx-auto">
-                <header className="flex justify-between items-center mb-12">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
-                        Dashboard
-                    </h1>
-                    <button
-                        onClick={handleLogout}
-                        className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-                    >
-                        Logout
-                    </button>
-                </header>
-
-                <div className="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
-                    <h2 className="text-2xl font-semibold mb-4">Welcome back, {auth.user?.name}!</h2>
-                    <p className="text-gray-400 mb-6">
-                        You are securely logged in. This is a protected route.
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gray-700/50 p-6 rounded-xl border border-gray-600">
-                            <h3 className="text-lg font-medium mb-2 text-purple-400">Profile</h3>
-                            <p className="text-sm text-gray-400">{auth.user?.email}</p>
-                        </div>
-                        <div className="bg-gray-700/50 p-6 rounded-xl border border-gray-600">
-                            <h3 className="text-lg font-medium mb-2 text-blue-400">Role</h3>
-                            <p className="text-sm text-gray-400">{auth.user?.role || 'User'}</p>
-                        </div>
-                        <div className="bg-gray-700/50 p-6 rounded-xl border border-gray-600">
-                            <h3 className="text-lg font-medium mb-2 text-green-400">Status</h3>
-                            <p className="text-sm text-gray-400">Active</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
->>>>>>> fd546c8a6aa631f2d6ec624f6c4874604d4835b4
         </div>
     );
 };
