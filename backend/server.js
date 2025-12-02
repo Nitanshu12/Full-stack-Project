@@ -5,6 +5,7 @@ require('dotenv').config()
 const connectDB = require('./config/db')
 const authRouter = require('./routes/authRoutes.js')
 const projectRouter = require('./routes/projectRoutes.js')
+const postRouter = require('./routes/postRoutes.js')
 
 
 const app = express()
@@ -40,6 +41,7 @@ app.use(cookieParser())
 
 app.use("/api", authRouter)
 app.use("/api/project", projectRouter)
+app.use("/api/post", postRouter)
 
 const PORT = 8080 || process.env.PORT
 

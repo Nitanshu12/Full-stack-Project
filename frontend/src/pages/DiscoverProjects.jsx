@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import  api  from '../api/axios.js';
-
+import Logo from '../assets/Logo.png';
 import { FiSearch, FiFilter, FiPlus, FiCalendar, FiMapPin, FiBell, FiLogOut } from 'react-icons/fi';
 
 const DiscoverProjects = () => {
@@ -62,9 +62,11 @@ const DiscoverProjects = () => {
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 text-white font-bold">
-                            CS
-                        </div>
+                        <img 
+                            src={Logo} 
+                            alt="CollabSphere Logo" 
+                            className="h-10 w-10 object-contain"
+                        />
                         <div>
                             <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
                             <p className="text-xs text-gray-500">Build together, faster.</p>
@@ -91,7 +93,12 @@ const DiscoverProjects = () => {
                             Find Teammates
                         </button>
                         <button className="hover:text-purple-600 transition-colors">Mentorship</button>
-                        <button className="hover:text-purple-600 transition-colors">Feed</button>
+                        <button 
+                            onClick={() => navigate('/feed')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Feed
+                        </button>
                     </nav>
 
                     <div className="flex items-center gap-4">

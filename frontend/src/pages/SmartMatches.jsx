@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../api/axios';
+import Logo from '../assets/Logo.png';
 import {
     FiBell,
     FiLogOut,
@@ -65,10 +66,11 @@ const SmartMatches = () => {
             <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                        <div className="relative">
-                            <div className="w-10 h-10 bg-blue-500 rounded-lg absolute opacity-80"></div>
-                            <div className="w-10 h-10 bg-purple-500 rounded-lg relative transform rotate-12"></div>
-                        </div>
+                        <img 
+                            src={Logo} 
+                            alt="CollabSphere Logo" 
+                            className="h-10 w-10 object-contain"
+                        />
                         <div>
                             <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
                         </div>
@@ -89,7 +91,12 @@ const SmartMatches = () => {
                         </button>
                         <button className="text-purple-600 transition-colors">Find Teammates</button>
                         <button className="hover:text-purple-600 transition-colors">Mentorship</button>
-                        <button className="hover:text-purple-600 transition-colors">Feed</button>
+                        <button 
+                            onClick={() => navigate('/feed')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Feed
+                        </button>
                     </nav>
 
                     <div className="flex items-center gap-4">

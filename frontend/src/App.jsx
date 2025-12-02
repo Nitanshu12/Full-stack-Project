@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import CreateProject from './pages/CreateProject';
 import DiscoverProjects from './pages/DiscoverProjects';
 import SmartMatches from './pages/SmartMatches';
+import CommunityFeed from './pages/CommunityFeed';
 
 const ProtectedRoute = ({ children }) => {
     const { auth, loading } = useAuth();
@@ -57,6 +58,14 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <SmartMatches />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/feed"
+                element={
+                    <ProtectedRoute>
+                        <CommunityFeed />
                     </ProtectedRoute>
                 }
             />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import Logo from '../assets/Logo.png';
 
 const Signup = () => {
     const [data, setData] = useState({
@@ -43,13 +44,11 @@ const Signup = () => {
             {/* Header with Logo */}
             <header className="px-6 md:px-12 py-6">
                 <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg absolute opacity-80"></div>
-                        <div className="w-10 h-10 bg-purple-500 rounded-lg relative transform rotate-12"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">★</span>
-                        </div>
-                    </div>
+                    <img 
+                        src={Logo} 
+                        alt="CollabSphere Logo" 
+                        className="h-10 w-10 object-contain"
+                    />
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">COLLABSPHERE</h1>
                         <p className="text-xs text-gray-600">Your Global Hub for Innovation</p>
