@@ -84,7 +84,12 @@ const DiscoverProjects = () => {
                         >
                             Dashboard
                         </button>
-                        <button className="hover:text-purple-600 transition-colors">Find Teammates</button>
+                        <button 
+                            onClick={() => navigate('/smart-matches')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Find Teammates
+                        </button>
                         <button className="hover:text-purple-600 transition-colors">Mentorship</button>
                         <button className="hover:text-purple-600 transition-colors">Feed</button>
                     </nav>

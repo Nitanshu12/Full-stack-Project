@@ -26,7 +26,8 @@ const actionCards = [
     {
         title: 'Find Teammates',
         icon: FiSearch,
-        description: 'Discover matching collaborators'
+        description: 'Discover matching collaborators',
+        navigate: '/smart-matches'
     },
     {
         title: 'Find Mentor',
@@ -153,7 +154,12 @@ const Dashboard = () => {
                         >
                             Projects
                         </button>
-                        <button className="hover:text-purple-600 transition-colors">Find Teammates</button>
+                        <button 
+                            onClick={() => navigate('/smart-matches')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Find Teammates
+                        </button>
                         <button className="hover:text-purple-600 transition-colors">Mentorship</button>
                         <button className="hover:text-purple-600 transition-colors">Feed</button>
                     </nav>
@@ -193,10 +199,10 @@ const Dashboard = () => {
                                 <button
                                     key={card.title}
                                     onClick={() => {
-                                        if (card.title === 'Create Project') {
-                                            navigate('/create-project');
-                                        } else if (card.navigate) {
+                                        if (card.navigate) {
                                             navigate(card.navigate);
+                                        } else if (card.title === 'Create Project') {
+                                            navigate('/create-project');
                                         }
                                     }}
                                     className={`flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all cursor-pointer ${
