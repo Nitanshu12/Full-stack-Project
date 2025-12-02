@@ -8,10 +8,33 @@ const projectRouter = require('./routes/projectRoutes.js')
 
 
 const app = express()
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.BACKEND_URL1,
+    'https://collabsphere-five.vercel.app',
+    'http://localhost:5173', // Vite default dev server
+    'http://localhost:3000'  // Common React dev server
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-    origin : process.env.FRONTEND_URL,
-    credentials : true
-}))
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check if origin is in allowed list
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Log for debugging
+            console.log('CORS blocked origin:', origin);
+            console.log('Allowed origins:', allowedOrigins);
+            callback(new Error("CORS blocked: " + origin));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json())
 app.use(cookieParser())
 
@@ -21,9 +44,9 @@ app.use("/api/project", projectRouter)
 const PORT = 8080 || process.env.PORT
 
 
-connectDB().then(()=>{
-    app.listen(PORT,()=>{
+connectDB().then(() => {
+    app.listen(PORT, () => {
         console.log("connnect to DB")
-        console.log("Server is running "+PORT)
+        console.log("Server is running " + PORT)
     })
 })

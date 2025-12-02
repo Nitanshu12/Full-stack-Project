@@ -8,8 +8,14 @@ async function userLogout(req,res){
 
         // Is refreshToken in db?
         const foundUser = await userModel.findOne({ refreshToken }).exec();
+        const cookieOptions = { 
+            httpOnly: true, 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
+            secure: process.env.NODE_ENV === "production" 
+        };
+        
         if (!foundUser) {
-            res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'None', secure: true });
+            res.clearCookie('refreshToken', cookieOptions);
             return res.sendStatus(204);
         }
 
@@ -18,7 +24,7 @@ async function userLogout(req,res){
         const result = await foundUser.save();
         console.log(result);
 
-        res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'None', secure: true });
+        res.clearCookie('refreshToken', cookieOptions);
         
         res.status(200).json({
             message : "Logged out successfully",

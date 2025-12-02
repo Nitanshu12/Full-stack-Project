@@ -7,7 +7,11 @@ async function refreshTokenController(req, res) {
         if (!cookies?.refreshToken) return res.sendStatus(401);
 
         const refreshToken = cookies.refreshToken;
-        res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'None', secure: true });
+        res.clearCookie('refreshToken', { 
+            httpOnly: true, 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
+            secure: process.env.NODE_ENV === "production" 
+        });
 
         const foundUser = await userModel.findOne({ refreshToken }).exec();
 
@@ -53,7 +57,12 @@ async function refreshTokenController(req, res) {
             await foundUser.save();
 
             // Creates Secure Cookie with refresh token
-            res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None' }); // secure: true - only serves on https
+            res.cookie('refreshToken', newRefreshToken, { 
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
 
             res.json({ accessToken });
         });

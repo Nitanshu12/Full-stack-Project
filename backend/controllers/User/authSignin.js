@@ -37,9 +37,10 @@ async function userSignInController(req,res){
         await user.save();
 
         const tokenOption = {
-            httpOnly : true,
-            secure : true,
-            sameSite: 'None' // Important for cross-site if frontend/backend on different ports/domains
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         }
 
         res.cookie("refreshToken", refreshToken, tokenOption).status(200).json({
