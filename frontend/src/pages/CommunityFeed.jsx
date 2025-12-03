@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 import { axiosPrivate } from '../api/axios';
 import api from '../api/axios';
 import Header from '../components/Header';

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 import api from '../api/axios.js';
 import Header from '../components/Header';
 import { FiSearch, FiFilter, FiPlus, FiCalendar, FiMapPin } from 'react-icons/fi';
