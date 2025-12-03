@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
         const verifyUser = async () => {
             try {
                 // Try to get a new access token using the refresh token (cookie)
-                const response = await api.post('/refresh-token');
+                const response = await api.post('/auth/refresh-token');
                 const accessToken = response.data.accessToken;
                 
                 // Decode token to get user info if needed, or fetch user details
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        const response = await api.post('/signin', { email, password });
+        const response = await api.post('/auth/signin', { email, password });
         const { accessToken, user } = response.data.data;
         
         localStorage.setItem('accessToken', accessToken);
@@ -52,13 +52,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signup = async (name, email, password) => {
-        const response = await api.post('/signup', { name, email, password });
+        const response = await api.post('/auth/signup', { name, email, password });
         return response.data;
     };
 
     const logout = async () => {
         try {
-            await api.get('/userLogout');
+            await api.get('/auth/userLogout');
             setAuth({});
             localStorage.removeItem('accessToken');
         } catch (error) {

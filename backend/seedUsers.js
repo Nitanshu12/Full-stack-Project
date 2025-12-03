@@ -197,7 +197,7 @@ const seedUsers = async () => {
                 skills: skillSets[19],
                 interests: interestSets[19]
             }
-        ];
+          ];
 
         // Hash passwords before inserting
         const hashedUsers = await Promise.all(
