@@ -42,7 +42,7 @@ const actionCards = [
     }
 ];
 
-const getStatCards = (activeProjectsCount) => [
+const getStatCards = (activeProjectsCount, connectionsCount) => [
     {
         label: 'Active Projects',
         value: activeProjectsCount,
@@ -51,7 +51,7 @@ const getStatCards = (activeProjectsCount) => [
     },
     {
         label: 'Connections',
-        value: 0,
+        value: connectionsCount,
         icon: FiUsers,
         color: 'text-sky-500'
     },
@@ -96,6 +96,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [activeProjectsCount, setActiveProjectsCount] = useState(0);
+    const [connectionsCount, setConnectionsCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -118,13 +119,27 @@ const Dashboard = () => {
             }
         } catch (err) {
             console.error('Error fetching project stats:', err);
-        } finally {
-            setLoading(false);
+        }
+    };
+
+    const fetchConnectionsCount = async () => {
+        try {
+            const res = await axiosPrivate.get('/connections/my');
+            if (res.data?.success) {
+                setConnectionsCount((res.data.data || []).length);
+            }
+        } catch (err) {
+            console.error('Error fetching connections:', err);
         }
     };
 
     useEffect(() => {
-        fetchProjectStats();
+        const load = async () => {
+            setLoading(true);
+            await Promise.all([fetchProjectStats(), fetchConnectionsCount()]);
+            setLoading(false);
+        };
+        load();
     }, []);
 
     // Refresh stats when returning from create project page
@@ -141,7 +156,7 @@ const Dashboard = () => {
         navigate('/login');
     };
 
-    const statCards = getStatCards(activeProjectsCount);
+    const statCards = getStatCards(activeProjectsCount, connectionsCount);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -173,7 +188,12 @@ const Dashboard = () => {
                         >
                             Find Teammates
                         </button>
-                        <button className="hover:text-purple-600 transition-colors">Mentorship</button>
+                        <button
+                            onClick={() => navigate('/mentors')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Mentorship
+                        </button>
                         <button 
                             onClick={() => navigate('/feed')}
                             className="hover:text-purple-600 transition-colors"

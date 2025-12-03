@@ -20,6 +20,7 @@ const Profile = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(auth.user || null);
     const [projects, setProjects] = useState([]);
+    const [connections, setConnections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -39,6 +40,12 @@ const Profile = () => {
                 const projRes = await axiosPrivate.get('/project/mine');
                 if (projRes.data?.success) {
                     setProjects(projRes.data.data.projects || []);
+                }
+
+                // Fetch connections
+                const connRes = await axiosPrivate.get('/connections/my');
+                if (connRes.data?.success) {
+                    setConnections(connRes.data.data || []);
                 }
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to load profile');
@@ -184,12 +191,43 @@ const Profile = () => {
 
                                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                                     <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                                        Mentor Connections
+                                        Teammate Connections
                                     </h2>
-                                    <p className="text-sm text-gray-500">
-                                        You haven&apos;t sent any mentor connection requests yet. As you start
-                                        connecting with mentors, they&apos;ll appear here.
-                                    </p>
+                                    {connections.length === 0 ? (
+                                        <p className="text-sm text-gray-500">
+                                            You haven&apos;t connected with any teammates yet. Use the &quot;Find
+                                            Teammates&quot; page to start building your network.
+                                        </p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {connections.map((conn) => {
+                                                const myId = user?._id;
+                                                const other =
+                                                    conn.requester && conn.requester._id === myId
+                                                        ? conn.receiver
+                                                        : conn.requester;
+                                                if (!other) return null;
+                                                return (
+                                                    <div
+                                                        key={conn._id}
+                                                        className="flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-2"
+                                                    >
+                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white text-xs font-semibold">
+                                                            {getInitials(other.name || 'User')}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                                                {other.name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 truncate">
+                                                                {other.email}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

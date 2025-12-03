@@ -18,9 +18,12 @@ const SmartMatches = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [connectingIds, setConnectingIds] = useState(new Set());
+    const [connectedIds, setConnectedIds] = useState(new Set());
 
     useEffect(() => {
         fetchUsers();
+        fetchConnections();
     }, []);
 
     const fetchUsers = async () => {
@@ -37,6 +40,49 @@ const SmartMatches = () => {
             setError('Failed to load matches. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchConnections = async () => {
+        try {
+            const res = await axiosPrivate.get('/connections/my');
+            if (res.data?.success) {
+                const myId = auth.user?._id;
+                const ids = new Set();
+                (res.data.data || []).forEach((conn) => {
+                    const requesterId = conn.requester?._id || conn.requester;
+                    const receiverId = conn.receiver?._id || conn.receiver;
+                    const otherId = requesterId === myId ? receiverId : requesterId;
+                    if (otherId) ids.add(String(otherId));
+                });
+                setConnectedIds(ids);
+            }
+        } catch (err) {
+            console.error('Error fetching connections:', err);
+        }
+    };
+
+    const handleConnect = async (targetUserId) => {
+        if (!targetUserId) return;
+        setError(null);
+
+        setConnectingIds((prev) => new Set(prev).add(targetUserId));
+        try {
+            const res = await axiosPrivate.post('/connections/connect', { targetUserId });
+            if (res.data?.success) {
+                setConnectedIds((prev) => new Set(prev).add(targetUserId));
+            } else {
+                setError(res.data?.message || 'Failed to connect. Please try again.');
+            }
+        } catch (err) {
+            console.error('Error creating connection:', err);
+            setError(err.response?.data?.message || 'Failed to connect. Please try again.');
+        } finally {
+            setConnectingIds((prev) => {
+                const copy = new Set(prev);
+                copy.delete(targetUserId);
+                return copy;
+            });
         }
     };
 
@@ -90,7 +136,12 @@ const SmartMatches = () => {
                             Projects
                         </button>
                         <button className="text-purple-600 transition-colors">Find Teammates</button>
-                        <button className="hover:text-purple-600 transition-colors">Mentorship</button>
+                        <button
+                            onClick={() => navigate('/mentors')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Mentorship
+                        </button>
                         <button 
                             onClick={() => navigate('/feed')}
                             className="hover:text-purple-600 transition-colors"
@@ -243,9 +294,21 @@ const SmartMatches = () => {
 
                                     {/* Action Buttons */}
                                     <div className="flex gap-3">
-                                        <button className="flex-1 bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2.5 rounded-lg font-medium hover:from-purple-700 hover:to-blue-600 transition-all flex items-center justify-center gap-2 shadow-sm">
+                                        <button
+                                            disabled={connectedIds.has(user._id) || connectingIds.has(user._id)}
+                                            onClick={() => handleConnect(user._id)}
+                                            className={`flex-1 px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm transition-all ${
+                                                connectedIds.has(user._id)
+                                                    ? 'bg-green-50 text-green-700 border border-green-200 cursor-default'
+                                                    : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600'
+                                            } ${connectingIds.has(user._id) ? 'opacity-70 cursor-wait' : ''}`}
+                                        >
                                             <FiMail className="w-4 h-4" />
-                                            Connect
+                                            {connectedIds.has(user._id)
+                                                ? 'Connected'
+                                                : connectingIds.has(user._id)
+                                                ? 'Connecting...'
+                                                : 'Connect'}
                                         </button>
                                         <button className="px-4 py-2.5 border border-purple-200 text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors flex items-center justify-center gap-2">
                                             <FiExternalLink className="w-4 h-4" />
