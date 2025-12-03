@@ -15,7 +15,7 @@ const DiscoverProjects = () => {
     const [tagFilter, setTagFilter] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [remoteOnly, setRemoteOnly] = useState(false);
-    const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'az'
+    const [sortBy, setSortBy] = useState('newest'); 
 
     const handleLogout = async () => {
         await logout();
@@ -24,7 +24,6 @@ const DiscoverProjects = () => {
 
     useEffect(() => {
         fetchProjects();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchProjects = async (overrides = {}) => {
@@ -49,7 +48,7 @@ const DiscoverProjects = () => {
             if (response.data.success) {
                 let fetched = response.data.data.projects || [];
 
-                // Client-side sorting for better UX
+           
                 if (sortBy === 'newest') {
                     fetched = [...fetched].sort(
                         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -96,7 +95,6 @@ const DiscoverProjects = () => {
             <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-                {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                     <div className="mb-4 sm:mb-0">
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
@@ -115,7 +113,6 @@ const DiscoverProjects = () => {
                     </button>
                 </div>
 
-                {/* Search and Filter Bar */}
                 <div className="mb-6 space-y-4">
                     <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
@@ -165,7 +162,7 @@ const DiscoverProjects = () => {
                                     />
                                 </div>
 
-                                {/* Location filter */}
+                            
                                 <div className="flex flex-col gap-1">
                                     <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
                                         Location
@@ -267,11 +264,11 @@ const DiscoverProjects = () => {
                                 key={project._id}
                                 className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                                 onClick={() => {
-                                    // TODO: Navigate to project details page
+                                    
                                     console.log('Project clicked:', project._id);
                                 }}
                             >
-                                {/* Category/Tag */}
+                            
                                 {project.tags && project.tags.length > 0 && (
                                     <div className="mb-3">
                                         <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
@@ -312,7 +309,7 @@ const DiscoverProjects = () => {
                                     </div>
                                 )}
 
-                                {/* Metadata */}
+                         
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                                         <FiCalendar className="w-4 h-4" />

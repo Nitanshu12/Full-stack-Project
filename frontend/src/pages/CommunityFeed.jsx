@@ -84,13 +84,10 @@ const CommunityFeed = () => {
             });
 
             if (response.data.success) {
-                // Clear comment input
                 setCommentTexts({ ...commentTexts, [postId]: '' });
-                // Update the post in the list
                 setPosts(posts.map(post => 
                     post._id === postId ? response.data.data : post
                 ));
-                // Show comments if hidden
                 setShowComments({ ...showComments, [postId]: true });
             }
         } catch (err) {
@@ -127,7 +124,7 @@ const CommunityFeed = () => {
         <div className="min-h-screen bg-white">
             <Header />
 
-            {/* Main Content */}
+       
             <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">
                 {/* Header Section */}
                 <div className="mb-8">
@@ -138,8 +135,6 @@ const CommunityFeed = () => {
                         Share updates, achievements, and connect with the community
                     </p>
                 </div>
-
-                {/* Create Post Section */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
                     <form onSubmit={handleCreatePost}>
                         <textarea
@@ -162,14 +157,13 @@ const CommunityFeed = () => {
                     </form>
                 </div>
 
-                {/* Loading State */}
                 {loading && (
                     <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
                     </div>
                 )}
 
-                {/* Posts List */}
+         
                 {!loading && (
                     <div className="space-y-6">
                         {posts.length === 0 ? (
@@ -182,7 +176,6 @@ const CommunityFeed = () => {
                                     key={post._id}
                                     className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
                                 >
-                                    {/* User Info */}
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
                                             {getInitials(post.author?.name)}
@@ -197,14 +190,12 @@ const CommunityFeed = () => {
                                         </div>
                                     </div>
 
-                                    {/* Post Content */}
                                     <div className="mb-4">
                                         <p className="text-gray-900 whitespace-pre-wrap break-words">
                                             {post.content}
                                         </p>
                                     </div>
 
-                                    {/* Interactions */}
                                     <div className="flex items-center gap-6 pt-4 border-t border-gray-100">
                                         <button
                                             onClick={() => handleLike(post._id)}
@@ -229,10 +220,8 @@ const CommunityFeed = () => {
                                         </button>
                                     </div>
 
-                                    {/* Comments Section */}
                                     {showComments[post._id] && (
                                         <div className="mt-4 pt-4 border-t border-gray-100">
-                                            {/* Existing Comments */}
                                             {post.comments && post.comments.length > 0 && (
                                                 <div className="space-y-4 mb-4">
                                                     {post.comments.map((comment, idx) => (
@@ -253,7 +242,6 @@ const CommunityFeed = () => {
                                                 </div>
                                             )}
 
-                                            {/* Add Comment */}
                                             <div className="flex gap-2">
                                                 <input
                                                     type="text"

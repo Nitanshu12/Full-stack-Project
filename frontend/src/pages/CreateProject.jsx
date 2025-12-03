@@ -96,7 +96,6 @@ const CreateProject = () => {
             }
             
             if (response.data.success) {
-                // Navigate to dashboard with a flag to refresh stats
                 navigate('/dashboard', { state: { projectCreated: true } });
             } else {
                 setError(response.data.message || (isEditMode ? 'Failed to update project' : 'Failed to create project'));
@@ -119,7 +118,6 @@ const CreateProject = () => {
         <div className="min-h-screen bg-white">
             <Header />
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-                {/* Back to Dashboard Link */}
                 <button
                     onClick={() => navigate('/dashboard')}
                     className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors mb-6"
@@ -128,7 +126,6 @@ const CreateProject = () => {
                     <span className="text-sm font-medium">Back to Dashboard</span>
                 </button>
 
-                {/* Title Section */}
                 <div className="mb-8">
                     <h1 className="text-4xl md:text-5xl font-bold text-purple-700 mb-3">
                         {isEditMode ? 'Edit Project' : 'Create New Project'}
@@ -140,7 +137,6 @@ const CreateProject = () => {
                     </p>
                 </div>
 
-                {/* Form Card */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8">
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -166,7 +162,6 @@ const CreateProject = () => {
                             />
                         </div>
 
-                        {/* Description */}
                         <div>
                             <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
                                 Description
@@ -183,7 +178,6 @@ const CreateProject = () => {
                             />
                         </div>
 
-                        {/* Tags */}
                         <div>
                             <label htmlFor="tags" className="block text-sm font-semibold text-gray-900 mb-2">
                                 Tags
@@ -232,7 +226,7 @@ const CreateProject = () => {
                             )}
                         </div>
 
-                        {/* Looking For */}
+        
                         <div>
                             <label htmlFor="lookingFor" className="block text-sm font-semibold text-gray-900 mb-2">
                                 Looking For

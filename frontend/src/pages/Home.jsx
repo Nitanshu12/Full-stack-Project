@@ -6,10 +6,10 @@ const Home = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
+            
             <header className="px-6 md:px-12 py-6 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    {/* Logo */}
+                    
                     <div className="flex items-center gap-2">
                         <img 
                             src={Logo} 
@@ -39,10 +39,10 @@ const Home = () => {
                 </div>
             </header>
 
-            {/* Hero Section */}
+            
             <main className="px-6 md:px-12 py-12 md:py-20">
                 <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-                    {/* Left Section - Text Content */}
+                    
                     <div className="space-y-6">
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                             Find Collaborators
@@ -62,7 +62,7 @@ const Home = () => {
                         </button>
                     </div>
 
-                    {/* Right Section - Illustration */}
+                    
                     <div className="flex justify-center md:justify-end">
                         <img
                             src={HeroImage}
@@ -73,7 +73,7 @@ const Home = () => {
                 </div>
             </main>
 
-            {/* Key Features Section */}
+            
             <section className="px-6 md:px-12 py-16 md:py-24 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
