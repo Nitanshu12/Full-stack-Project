@@ -12,6 +12,10 @@ const DiscoverProjects = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [showFilters, setShowFilters] = useState(false);
+    const [tagFilter, setTagFilter] = useState('');
+    const [locationFilter, setLocationFilter] = useState('');
+    const [remoteOnly, setRemoteOnly] = useState(false);
+    const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'az'
 
     const handleLogout = async () => {
         await logout();
@@ -20,16 +24,47 @@ const DiscoverProjects = () => {
 
     useEffect(() => {
         fetchProjects();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const fetchProjects = async (search = '') => {
+    const fetchProjects = async (overrides = {}) => {
+        const {
+            search = searchQuery,
+            tag = tagFilter,
+            location = locationFilter,
+            isRemote = remoteOnly
+        } = overrides;
+
         try {
             setLoading(true);
-            const params = search ? { search } : {};
+            const params = {};
+
+            if (search) params.search = search;
+            if (tag) params.tags = tag;
+            if (location) params.location = location;
+            if (isRemote) params.isRemote = 'true';
+
             const response = await api.get('/project/all', { params });
             
             if (response.data.success) {
-                setProjects(response.data.data.projects || []);
+                let fetched = response.data.data.projects || [];
+
+                // Client-side sorting for better UX
+                if (sortBy === 'newest') {
+                    fetched = [...fetched].sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                    );
+                } else if (sortBy === 'oldest') {
+                    fetched = [...fetched].sort(
+                        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+                    );
+                } else if (sortBy === 'az') {
+                    fetched = [...fetched].sort((a, b) =>
+                        (a.title || '').localeCompare(b.title || '')
+                    );
+                }
+
+                setProjects(fetched);
             }
         } catch (err) {
             console.error('Error fetching projects:', err);
@@ -40,7 +75,7 @@ const DiscoverProjects = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        fetchProjects(searchQuery);
+        fetchProjects({ search: searchQuery });
     };
 
     const formatDate = (dateString) => {
@@ -138,8 +173,8 @@ const DiscoverProjects = () => {
                 </div>
 
                 {/* Search and Filter Bar */}
-                <div className="mb-8">
-                    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+                <div className="mb-6 space-y-4">
+                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <FiSearch className="w-5 h-5 text-gray-400" />
@@ -152,15 +187,124 @@ const DiscoverProjects = () => {
                                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-400"
                             />
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
-                        >
-                            <FiFilter className="w-5 h-5" />
-                            Filters
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                type="submit"
+                                className="inline-flex flex-1 md:flex-none items-center justify-center px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition"
+                            >
+                                Search
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="inline-flex items-center gap-2 px-4 py-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
+                            >
+                                <FiFilter className="w-5 h-5" />
+                                Filters
+                            </button>
+                        </div>
                     </form>
+
+                    {showFilters && (
+                        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-5 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Tag / Skill filter */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                        Skill / Tag
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={tagFilter}
+                                        onChange={(e) => setTagFilter(e.target.value)}
+                                        placeholder="e.g. React, AI, Backend"
+                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Location filter */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                        Location
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={locationFilter}
+                                        onChange={(e) => setLocationFilter(e.target.value)}
+                                        placeholder="City, country, or remote"
+                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* Sort select */}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                        Sort by
+                                    </label>
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => {
+                                            setSortBy(e.target.value);
+                                            // Re-apply sorting on current results
+                                            fetchProjects();
+                                        }}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    >
+                                        <option value="newest">Newest first</option>
+                                        <option value="oldest">Oldest first</option>
+                                        <option value="az">Title A–Z</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-1">
+                                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={remoteOnly}
+                                        onChange={(e) => setRemoteOnly(e.target.checked)}
+                                        className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                    />
+                                    <span>Show only remote-friendly projects</span>
+                                </label>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setTagFilter('');
+                                            setLocationFilter('');
+                                            setRemoteOnly(false);
+                                            setSortBy('newest');
+                                            fetchProjects({
+                                                search: searchQuery,
+                                                tag: '',
+                                                location: '',
+                                                isRemote: false
+                                            });
+                                        }}
+                                        className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                                    >
+                                        Clear filters
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            fetchProjects({
+                                                search: searchQuery,
+                                                tag: tagFilter,
+                                                location: locationFilter,
+                                                isRemote: remoteOnly
+                                            })
+                                        }
+                                        className="px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm hover:shadow-md transition"
+                                    >
+                                        Apply filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Projects Grid */}
