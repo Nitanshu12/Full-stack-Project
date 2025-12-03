@@ -57,6 +57,21 @@ export const AuthProvider = ({ children }) => {
         return { success: true, message, data, error: false };
     };
 
+    const loginWithGoogle = async (idToken) => {
+        const response = await api.post('/google-signin', { idToken });
+        const { success, data, message, error } = response.data;
+
+        if (!success || !data) {
+            return { success: false, message: message || "Login with Google failed", error: error ?? true };
+        }
+
+        const { accessToken, user } = data;
+
+        localStorage.setItem('accessToken', accessToken);
+        setAuth({ user, accessToken });
+        return { success: true, message, data, error: false };
+    };
+
     const signup = async (name, email, password) => {
         const response = await api.post('/signup', { name, email, password });
         const { success, message, data, error } = response.data;
@@ -80,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ auth, setAuth, login, signup, logout, loading }}>
+        <AuthContext.Provider value={{ auth, setAuth, login, loginWithGoogle, signup, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

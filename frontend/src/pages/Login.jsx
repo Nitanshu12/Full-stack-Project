@@ -9,7 +9,7 @@ const Login = () => {
         password: ""
     });
     const [error, setError] = useState("");
-    const { login } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -33,9 +33,63 @@ const Login = () => {
         }
     };
 
-    const handleGoogleSignIn = () => {
-        // TODO: Implement Google sign-in
-        console.log("Google sign-in clicked");
+    const handleGoogleSignIn = async () => {
+        try {
+            setError("");
+            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+            if (!clientId) {
+                setError("Google sign-in is not configured.");
+                return;
+            }
+
+            // Load Google Identity script if not already loaded
+            if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+                await new Promise((resolve, reject) => {
+                    const existingScript = document.getElementById('google-identity-script');
+                    if (existingScript) {
+                        existingScript.onload = () => resolve();
+                        existingScript.onerror = () => reject(new Error('Failed to load Google script'));
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = 'https://accounts.google.com/gsi/client';
+                    script.async = true;
+                    script.defer = true;
+                    script.id = 'google-identity-script';
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error('Failed to load Google script'));
+                    document.body.appendChild(script);
+                });
+            }
+
+            await new Promise((resolve, reject) => {
+                try {
+                    window.google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: async (response) => {
+                            try {
+                                const idToken = response.credential;
+                                const res = await loginWithGoogle(idToken);
+                                if (res.success) {
+                                    navigate('/dashboard');
+                                } else {
+                                    setError(res.message || "Google login failed");
+                                }
+                            } catch (err) {
+                                setError(err.response?.data?.message || "Google login failed");
+                            } finally {
+                                resolve();
+                            }
+                        }
+                    });
+                    window.google.accounts.id.prompt();
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        } catch (e) {
+            setError("Google sign-in is currently unavailable.");
+        }
     };
 
     return (
