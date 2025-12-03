@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { axiosPrivate } from '../api/axios';
 import { FiArrowLeft, FiPlus, FiX } from 'react-icons/fi';
 
 const CreateProject = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -13,10 +14,28 @@ const CreateProject = () => {
         tags: [],
         lookingFor: [],
         location: '',
-        isRemote: true
+        isRemote: true,
+        status: 'active'
     });
     const [tagInput, setTagInput] = useState('');
     const [roleInput, setRoleInput] = useState('');
+    const [isEditMode, setIsEditMode] = useState(false);
+
+    useEffect(() => {
+        const projectToEdit = location.state?.projectToEdit;
+        if (projectToEdit) {
+            setIsEditMode(true);
+            setFormData({
+                title: projectToEdit.title || '',
+                description: projectToEdit.description || '',
+                tags: projectToEdit.tags || [],
+                lookingFor: projectToEdit.lookingFor || [],
+                location: projectToEdit.location || '',
+                isRemote: projectToEdit.isRemote ?? true,
+                status: projectToEdit.status || 'active'
+            });
+        }
+    }, [location.state]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -66,16 +85,26 @@ const CreateProject = () => {
         setLoading(true);
 
         try {
-            const response = await axiosPrivate.post('/project/create', formData);
+            let response;
+            const projectToEdit = location.state?.projectToEdit;
+
+            if (isEditMode && projectToEdit?._id) {
+                response = await axiosPrivate.put(`/project/${projectToEdit._id}`, formData);
+            } else {
+                response = await axiosPrivate.post('/project/create', formData);
+            }
             
             if (response.data.success) {
                 // Navigate to dashboard with a flag to refresh stats
                 navigate('/dashboard', { state: { projectCreated: true } });
             } else {
-                setError(response.data.message || 'Failed to create project');
+                setError(response.data.message || (isEditMode ? 'Failed to update project' : 'Failed to create project'));
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred while creating the project');
+            setError(
+                err.response?.data?.message ||
+                    (isEditMode ? 'An error occurred while updating the project' : 'An error occurred while creating the project')
+            );
         } finally {
             setLoading(false);
         }
@@ -100,10 +129,12 @@ const CreateProject = () => {
                 {/* Title Section */}
                 <div className="mb-8">
                     <h1 className="text-4xl md:text-5xl font-bold text-purple-700 mb-3">
-                        Create New Project
+                        {isEditMode ? 'Edit Project' : 'Create New Project'}
                     </h1>
                     <p className="text-lg text-gray-600">
-                        Share your project idea and find teammates to build it together.
+                        {isEditMode
+                            ? 'Update your project details and keep your collaborators in sync.'
+                            : 'Share your project idea and find teammates to build it together.'}
                     </p>
                 </div>
 
