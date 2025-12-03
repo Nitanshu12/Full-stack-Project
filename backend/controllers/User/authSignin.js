@@ -32,7 +32,7 @@ async function userSignInController(req,res){
         const accessToken = await jwt.sign(tokenData, process.env.JWT_ACCESS_SECRET || process.env.TOKEN_SECRET_KEY, { expiresIn: '15m' });
         const refreshToken = await jwt.sign(tokenData, process.env.JWT_REFRESH_SECRET || process.env.TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
-        // Save refresh token to DB
+        
         user.refreshToken = [...(user.refreshToken || []), refreshToken];
         await user.save();
 
@@ -40,7 +40,7 @@ async function userSignInController(req,res){
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            maxAge: 7 * 24 * 60 * 60 * 1000 
         }
 
         res.cookie("refreshToken", refreshToken, tokenOption).status(200).json({

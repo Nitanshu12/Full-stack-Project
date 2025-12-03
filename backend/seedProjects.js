@@ -6,10 +6,8 @@ const connectDB = require('./config/db');
 
 const seedProjects = async () => {
     try {
-        // Connect to database
         await connectDB();
         
-        // Get some users to assign as project creators
         const users = await UserModel.find().limit(20);
         
         if (users.length === 0) {
@@ -18,7 +16,6 @@ const seedProjects = async () => {
             process.exit(1);
         }
 
-        // Diverse project templates
         const projectTemplates = [
             {
                 title: "E-Commerce Platform with AI Recommendations",

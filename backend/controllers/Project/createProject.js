@@ -3,9 +3,9 @@ const projectModel = require('../../models/Project');
 async function createProjectController(req, res) {
     try {
         const { title, description, tags, lookingFor, location, isRemote } = req.body;
-        const userId = req.userId; // From auth middleware
+        const userId = req.userId; 
 
-        // Validation
+       
         if (!title) {
             return res.status(400).json({
                 message: 'Project title is required',
@@ -22,7 +22,7 @@ async function createProjectController(req, res) {
             });
         }
 
-        // Create project payload
+       
         const projectData = {
             title,
             description,
@@ -36,7 +36,7 @@ async function createProjectController(req, res) {
         const newProject = new projectModel(projectData);
         const savedProject = await newProject.save();
 
-        // Populate createdBy field with user details
+       
         await savedProject.populate('createdBy', 'name email');
 
         res.status(201).json({

@@ -5,7 +5,7 @@ async function updateProfileController(req, res) {
         const userId = req.userId; // From auth middleware
         const { skills, interests } = req.body;
 
-        // Validate that at least one field is provided
+        
         if (skills === undefined && interests === undefined) {
             return res.status(400).json({
                 message: 'Please provide skills or interests to update',
@@ -14,10 +14,10 @@ async function updateProfileController(req, res) {
             });
         }
 
-        // Build update object
+        
         const updateData = {};
         if (skills !== undefined) {
-            // Ensure skills is an array
+            
             if (!Array.isArray(skills)) {
                 return res.status(400).json({
                     message: 'Skills must be an array',
@@ -29,7 +29,7 @@ async function updateProfileController(req, res) {
         }
 
         if (interests !== undefined) {
-            // Ensure interests is an array
+            
             if (!Array.isArray(interests)) {
                 return res.status(400).json({
                     message: 'Interests must be an array',

@@ -4,9 +4,9 @@ async function commentPostController(req, res) {
     try {
         const { postId } = req.params;
         const { text } = req.body;
-        const userId = req.userId; // From auth middleware
+        const userId = req.userId; 
 
-        // Validation
+      
         if (!text || text.trim().length === 0) {
             return res.status(400).json({
                 message: 'Comment text is required',
@@ -25,7 +25,6 @@ async function commentPostController(req, res) {
             });
         }
 
-        // Add comment
         post.comments.push({
             user: userId,
             text: text.trim()
@@ -33,7 +32,7 @@ async function commentPostController(req, res) {
 
         await post.save();
 
-        // Populate and return updated post
+
         await post.populate('author', 'name email');
         await post.populate('likes', 'name');
         await post.populate('comments.user', 'name email');

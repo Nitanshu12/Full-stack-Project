@@ -3,9 +3,9 @@ const postModel = require('../../models/Post');
 async function createPostController(req, res) {
     try {
         const { content } = req.body;
-        const userId = req.userId; // From auth middleware
+        const userId = req.userId; 
 
-        // Validation
+       
         if (!content || content.trim().length === 0) {
             return res.status(400).json({
                 message: 'Post content is required',
@@ -14,7 +14,7 @@ async function createPostController(req, res) {
             });
         }
 
-        // Create post
+   
         const newPost = new postModel({
             content: content.trim(),
             author: userId,
@@ -24,7 +24,7 @@ async function createPostController(req, res) {
 
         const savedPost = await newPost.save();
         
-        // Populate author field with user details
+       
         await savedPost.populate('author', 'name email');
 
         res.status(201).json({

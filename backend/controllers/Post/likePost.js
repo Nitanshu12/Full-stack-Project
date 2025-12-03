@@ -3,7 +3,7 @@ const postModel = require('../../models/Post');
 async function likePostController(req, res) {
     try {
         const { postId } = req.params;
-        const userId = req.userId; // From auth middleware
+        const userId = req.userId; 
 
         const post = await postModel.findById(postId);
 
@@ -15,20 +15,20 @@ async function likePostController(req, res) {
             });
         }
 
-        // Check if user already liked the post
+       
         const isLiked = post.likes.includes(userId);
 
         if (isLiked) {
-            // Unlike: remove user from likes array
+           
             post.likes = post.likes.filter(id => id.toString() !== userId.toString());
         } else {
-            // Like: add user to likes array
+            
             post.likes.push(userId);
         }
 
         await post.save();
 
-        // Populate and return updated post
+        
         await post.populate('author', 'name email');
         await post.populate('likes', 'name');
         await post.populate('comments.user', 'name email');

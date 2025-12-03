@@ -4,7 +4,7 @@ async function getProjectStatsController(req, res) {
     try {
         const userId = req.userId; // From auth middleware
 
-        // Count active projects for the user
+        
         const activeProjectsCount = await projectModel.countDocuments({
             createdBy: userId,
             status: 'active'

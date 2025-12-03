@@ -3,10 +3,10 @@ const userModel = require("../../models/User");
 async function userLogout(req,res){
     try{
         const cookies = req.cookies;
-        if (!cookies?.refreshToken) return res.sendStatus(204); // No content
+        if (!cookies?.refreshToken) return res.sendStatus(204); 
         const refreshToken = cookies.refreshToken;
 
-        // Is refreshToken in db?
+        
         const foundUser = await userModel.findOne({ refreshToken }).exec();
         const cookieOptions = { 
             httpOnly: true, 
@@ -19,7 +19,7 @@ async function userLogout(req,res){
             return res.sendStatus(204);
         }
 
-        // Delete refreshToken in db
+        
         foundUser.refreshToken = foundUser.refreshToken.filter(rt => rt !== refreshToken);
         const result = await foundUser.save();
         console.log(result);

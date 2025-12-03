@@ -5,12 +5,12 @@ async function getAllProjectsController(req, res) {
         const { search, tags, location, isRemote, page = 1, limit = 12 } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Build query
+        
         const query = {
             status: 'active'
         };
 
-        // Search by title, description, or tags
+        
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
@@ -20,13 +20,13 @@ async function getAllProjectsController(req, res) {
             ];
         }
 
-        // Filter by tags
+        
         if (tags) {
             const tagArray = Array.isArray(tags) ? tags : [tags];
             query.tags = { $in: tagArray };
         }
 
-        // Filter by location
+       
         if (location) {
             query.location = { $regex: location, $options: 'i' };
         }
@@ -36,7 +36,7 @@ async function getAllProjectsController(req, res) {
             query.isRemote = isRemote === 'true';
         }
 
-        // Get projects with pagination
+       
         const projects = await projectModel
             .find(query)
             .populate('createdBy', 'name email')
@@ -44,7 +44,7 @@ async function getAllProjectsController(req, res) {
             .skip(skip)
             .limit(parseInt(limit));
 
-        // Get total count for pagination
+        
         const total = await projectModel.countDocuments(query);
 
         res.status(200).json({

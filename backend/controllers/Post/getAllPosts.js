@@ -2,7 +2,7 @@ const postModel = require('../../models/Post');
 
 async function getAllPostsController(req, res) {
     try {
-        // Get all posts, sorted by newest first
+        
         const posts = await postModel
             .find()
             .populate('author', 'name email')

@@ -15,11 +15,11 @@ async function refreshTokenController(req, res) {
 
         const foundUser = await userModel.findOne({ refreshToken }).exec();
 
-        // Detected refresh token reuse!
+        
         if (!foundUser) {
             jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.TOKEN_SECRET_KEY, async (err, decoded) => {
-                if (err) return res.sendStatus(403); // Forbidden
-                // Delete refresh tokens of hacked user
+                if (err) return res.sendStatus(403); 
+                
                 const hackedUser = await userModel.findOne({ _id: decoded._id }).exec();
                 if (hackedUser) {
                     hackedUser.refreshToken = [];
@@ -39,7 +39,7 @@ async function refreshTokenController(req, res) {
             }
             if (err || foundUser._id.toString() !== decoded._id) return res.sendStatus(403);
 
-            // Refresh token was still valid
+            
             const accessToken = jwt.sign(
                 { _id: foundUser._id, email: foundUser.email },
                 process.env.JWT_ACCESS_SECRET || process.env.TOKEN_SECRET_KEY,
@@ -52,16 +52,16 @@ async function refreshTokenController(req, res) {
                 { expiresIn: '7d' }
             );
 
-            // Saving refreshToken with current user
+            
             foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
             await foundUser.save();
 
-            // Creates Secure Cookie with refresh token
+            
             res.cookie('refreshToken', newRefreshToken, { 
                 httpOnly: true, 
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+                maxAge: 7 * 24 * 60 * 60 * 1000 
             });
 
             res.json({ accessToken });
