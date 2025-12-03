@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-const getBaseUrl = () => {
-    let url = import.meta.env.VITE_API_URL || 'https://collabsphere-backend-0np0.onrender.com/api';
-    if (!url.endsWith('/api')) {
-        url = url.replace(/\/$/, '') + '/api';
-    }
-    return url;
-};
-
-const BASE_URL = getBaseUrl();
+// IMPORTANT:
+// - Backend exposes all routes under `/api` (see backend/server.js).
+// - In production, set VITE_API_URL to the FULL base URL including `/api`,
+//   e.g. `https://collabsphere-backend-0np0.onrender.com/api`.
+// - In local dev, this will fall back to `http://localhost:8080/api`.
+const BASE_URL =
+    (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.replace(/\/$/, ''))
+    || 'http://localhost:8080/api';
 
 const api = axios.create({
     baseURL: BASE_URL,

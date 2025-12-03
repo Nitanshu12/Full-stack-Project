@@ -12,7 +12,8 @@ export const AuthProvider = ({ children }) => {
         const verifyUser = async () => {
             try {
                 // Try to get a new access token using the refresh token (cookie)
-                const response = await api.post('/auth/refresh-token');
+                // Backend route: POST /api/refresh-token
+                const response = await api.post('/refresh-token');
                 const accessToken = response.data.accessToken;
                 
                 // Decode token to get user info if needed, or fetch user details
@@ -23,9 +24,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('accessToken', accessToken);
                 
                 // Fetch user details
-                const userRes = await axiosPrivate.get('/user-details', {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
+                const userRes = await axiosPrivate.get('/user-details');
 
                 setAuth({ 
                     user: userRes.data.data, 
