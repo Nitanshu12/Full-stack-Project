@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const getBaseUrl = () => {
     let url = import.meta.env.VITE_API_URL || 'https://collabsphere-backend-0np0.onrender.com/api';
-    // Ensure URL ends with /api to match backend route structure
     if (!url.endsWith('/api')) {
         url = url.replace(/\/$/, '') + '/api';
     }
@@ -42,7 +41,7 @@ axiosPrivate.interceptors.response.use(
         if (error?.response?.status === 403 && !prevRequest?.sent) {
             prevRequest.sent = true;
             try {
-                const response = await api.post('/auth/refresh-token');
+                const response = await api.post('/refresh-token');
                 const newAccessToken = response.data.accessToken;
                 
                 // Store new token
