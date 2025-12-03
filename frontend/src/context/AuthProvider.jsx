@@ -43,16 +43,30 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const response = await api.post('/signin', { email, password });
-        const { accessToken, user } = response.data.data;
+        const { success, data, message, error } = response.data;
+
+        // Backend always returns 200 with success flag, so guard against missing data
+        if (!success || !data) {
+            return { success: false, message: message || "Login failed", error: error ?? true };
+        }
+
+        const { accessToken, user } = data;
         
         localStorage.setItem('accessToken', accessToken);
         setAuth({ user, accessToken });
-        return response.data;
+        return { success: true, message, data, error: false };
     };
 
     const signup = async (name, email, password) => {
         const response = await api.post('/signup', { name, email, password });
-        return response.data;
+        const { success, message, data, error } = response.data;
+
+        return {
+            success,
+            message,
+            data,
+            error
+        };
     };
 
     const logout = async () => {
