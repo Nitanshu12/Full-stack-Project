@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { axiosPrivate } from '../api/axios';
-import Logo from '../assets/Logo.png';
+import Header from '../components/Header';
 import {
-    FiLogOut,
     FiPlusSquare,
     FiUsers,
     FiSearch,
@@ -92,23 +91,12 @@ const quickLinks = [
 ];
 
 const Dashboard = () => {
-    const { auth, logout } = useAuth();
+    const { auth } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [activeProjectsCount, setActiveProjectsCount] = useState(0);
     const [connectionsCount, setConnectionsCount] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
-    const getInitials = (name = '') => {
-        const parts = name.trim().split(' ');
-        if (parts.length === 1) {
-            return parts[0].slice(0, 2).toUpperCase();
-        }
-        const first = parts[0]?.[0] || '';
-        const last = parts[parts.length - 1]?.[0] || '';
-        return (first + last).toUpperCase();
-    };
 
     // Fetch project stats
     const fetchProjectStats = async () => {
@@ -146,99 +134,17 @@ const Dashboard = () => {
     useEffect(() => {
         if (location.state?.projectCreated) {
             fetchProjectStats();
+            fetchConnectionsCount();
             // Clear the state to prevent unnecessary refetches
             window.history.replaceState({}, document.title);
         }
     }, [location.state]);
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
     const statCards = getStatCards(activeProjectsCount, connectionsCount);
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <img 
-                            src={Logo} 
-                            alt="CollabSphere Logo" 
-                            className="h-20 w-20 object-contain"
-                        />
-                        <div>
-                            <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                            <p className="text-xs text-gray-500">Build together, faster.</p>
-                        </div>
-                    </div>
-
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                        <button 
-                            onClick={() => navigate('/discover-projects')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Projects
-                        </button>
-                        <button 
-                            onClick={() => navigate('/smart-matches')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Find Teammates
-                        </button>
-                        <button
-                            onClick={() => navigate('/mentors')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Mentorship
-                        </button>
-                        <button 
-                            onClick={() => navigate('/feed')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Feed
-                        </button>
-                    </nav>
-
-                    <div className="flex items-center gap-4">
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                                className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white text-sm font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white"
-                            >
-                                {getInitials(auth.user?.name || 'User')}
-                            </button>
-                            {isProfileMenuOpen && (
-                                <div className="absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
-                                    <button
-                                        onClick={() => {
-                                            setIsProfileMenuOpen(false);
-                                            navigate('/profile');
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                    >
-                                        Your Profile
-                                    </button>
-                                    <div className="border-t border-gray-100 my-1" />
-                                    <button
-                                        onClick={async () => {
-                                            setIsProfileMenuOpen(false);
-                                            await handleLogout();
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 inline-flex items-center gap-2"
-                                    >
-                                        <FiLogOut className="w-4 h-4" />
-                                        Logout
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             {/* Main Content */}
             <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">

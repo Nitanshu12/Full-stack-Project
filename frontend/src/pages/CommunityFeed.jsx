@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
 import { axiosPrivate } from '../api/axios';
 import api from '../api/axios';
-import Logo from '../assets/Logo.png';
+import Header from '../components/Header';
 import {
-    FiBell,
-    FiLogOut,
     FiSend,
     FiHeart,
     FiMessageCircle
 } from 'react-icons/fi';
 
 const CommunityFeed = () => {
-    const { auth, logout } = useAuth();
+    const { auth } = useAuth();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -101,11 +98,6 @@ const CommunityFeed = () => {
         }
     };
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
     const getInitials = (name) => {
         if (!name) return 'U';
         const parts = name.trim().split(' ');
@@ -132,57 +124,7 @@ const CommunityFeed = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                        <img 
-                            src={Logo} 
-                            alt="CollabSphere Logo" 
-                            className="h-10 w-10 object-contain"
-                        />
-                        <div>
-                            <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                        </div>
-                    </div>
-
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                        <button 
-                            onClick={() => navigate('/dashboard')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Dashboard
-                        </button>
-                        <button 
-                            onClick={() => navigate('/discover-projects')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Projects
-                        </button>
-                        <button 
-                            onClick={() => navigate('/smart-matches')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Find Teammates
-                        </button>
-                        <button className="text-purple-600 transition-colors">Feed</button>
-                    </nav>
-
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-gray-500 hover:text-gray-900 transition-colors">
-                            <FiBell className="w-5 h-5" />
-                            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-purple-500" />
-                        </button>
-                        <button
-                            onClick={handleLogout}
-                            className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-purple-500 hover:text-purple-600 transition-colors"
-                        >
-                            <FiLogOut />
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             {/* Main Content */}
             <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">

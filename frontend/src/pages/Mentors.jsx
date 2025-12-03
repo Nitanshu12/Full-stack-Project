@@ -1,30 +1,9 @@
-import Logo from '../assets/Logo.png';
-import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
 
 const Mentors = () => {
-    const navigate = useNavigate();
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-50">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div
-                        className="flex items-center gap-2 cursor-pointer"
-                        onClick={() => navigate('/dashboard')}
-                    >
-                        <img
-                            src={Logo}
-                            alt="CollabSphere Logo"
-                            className="h-10 w-10 object-contain"
-                        />
-                        <div>
-                            <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                            <p className="text-xs text-gray-500">Mentorship hub</p>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             {/* Main */}
             <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16">

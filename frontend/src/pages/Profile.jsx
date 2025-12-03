@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { axiosPrivate } from '../api/axios';
-import Logo from '../assets/Logo.png';
-import { FiEdit2, FiTrash2, FiFolder, FiMapPin, FiArrowLeft } from 'react-icons/fi';
+import Header from '../components/Header';
+import { FiEdit2, FiTrash2, FiFolder, FiMapPin, FiX, FiPlus, FiCheck } from 'react-icons/fi';
 
 const getInitials = (name = '') => {
     const parts = name.trim().split(' ');
@@ -23,6 +23,13 @@ const Profile = () => {
     const [connections, setConnections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [editingSkills, setEditingSkills] = useState(false);
+    const [editingInterests, setEditingInterests] = useState(false);
+    const [tempSkills, setTempSkills] = useState([]);
+    const [tempInterests, setTempInterests] = useState([]);
+    const [skillInput, setSkillInput] = useState('');
+    const [interestInput, setInterestInput] = useState('');
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -78,35 +85,87 @@ const Profile = () => {
         }
     };
 
+    const handleStartEditSkills = () => {
+        setTempSkills([...(user?.skills || [])]);
+        setEditingSkills(true);
+    };
+
+    const handleStartEditInterests = () => {
+        setTempInterests([...(user?.interests || [])]);
+        setEditingInterests(true);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingSkills(false);
+        setEditingInterests(false);
+        setSkillInput('');
+        setInterestInput('');
+    };
+
+    const handleAddSkill = () => {
+        if (skillInput.trim() && !tempSkills.includes(skillInput.trim())) {
+            setTempSkills([...tempSkills, skillInput.trim()]);
+            setSkillInput('');
+        }
+    };
+
+    const handleRemoveSkill = (skillToRemove) => {
+        setTempSkills(tempSkills.filter(s => s !== skillToRemove));
+    };
+
+    const handleAddInterest = () => {
+        if (interestInput.trim() && !tempInterests.includes(interestInput.trim())) {
+            setTempInterests([...tempInterests, interestInput.trim()]);
+            setInterestInput('');
+        }
+    };
+
+    const handleRemoveInterest = (interestToRemove) => {
+        setTempInterests(tempInterests.filter(i => i !== interestToRemove));
+    };
+
+    const handleSaveSkills = async () => {
+        setSaving(true);
+        try {
+            const res = await axiosPrivate.put('/update-profile', { skills: tempSkills });
+            if (res.data?.success) {
+                setUser(res.data.data);
+                setEditingSkills(false);
+                setSkillInput('');
+            } else {
+                alert(res.data?.message || 'Failed to update skills');
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to update skills');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSaveInterests = async () => {
+        setSaving(true);
+        try {
+            const res = await axiosPrivate.put('/update-profile', { interests: tempInterests });
+            if (res.data?.success) {
+                setUser(res.data.data);
+                setEditingInterests(false);
+                setInterestInput('');
+            } else {
+                alert(res.data?.message || 'Failed to update interests');
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to update interests');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const skills = user?.skills || [];
     const interests = user?.interests || [];
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header (reuse style from dashboard) */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src={Logo}
-                            alt="CollabSphere Logo"
-                            className="h-20 w-20 object-contain"
-                        />
-                        <div>
-                            <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                            <p className="text-xs text-gray-500">Your creator profile</p>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="hidden sm:inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-purple-500 hover:text-purple-600 transition-colors"
-                    >
-                        <FiArrowLeft className="w-4 h-4" />
-                        Back to Dashboard
-                    </button>
-                </div>
-            </header>
+            <Header />
 
             <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
                 {loading && (
@@ -146,12 +205,82 @@ const Profile = () => {
                             {/* Left: skills & interests */}
                             <div className="space-y-6">
                                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                                        Skills
-                                    </h2>
-                                    {skills.length === 0 ? (
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h2 className="text-lg font-semibold text-gray-900">
+                                            Skills
+                                        </h2>
+                                        {!editingSkills ? (
+                                            <button
+                                                onClick={handleStartEditSkills}
+                                                className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                                            >
+                                                <FiEdit2 className="w-4 h-4" />
+                                                {skills.length === 0 ? 'Add' : 'Edit'}
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={handleSaveSkills}
+                                                    disabled={saving}
+                                                    className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
+                                                >
+                                                    <FiCheck className="w-4 h-4" />
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    disabled={saving}
+                                                    className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium disabled:opacity-50"
+                                                >
+                                                    <FiX className="w-4 h-4" />
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {editingSkills ? (
+                                        <div className="space-y-3">
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={skillInput}
+                                                    onChange={(e) => setSkillInput(e.target.value)}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleAddSkill();
+                                                        }
+                                                    }}
+                                                    placeholder="Add a skill (e.g., React, Python)"
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                                />
+                                                <button
+                                                    onClick={handleAddSkill}
+                                                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                                >
+                                                    <FiPlus className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {tempSkills.map((skill) => (
+                                                    <span
+                                                        key={skill}
+                                                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-medium"
+                                                    >
+                                                        {skill}
+                                                        <button
+                                                            onClick={() => handleRemoveSkill(skill)}
+                                                            className="hover:text-purple-900"
+                                                        >
+                                                            <FiX className="w-3 h-3" />
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : skills.length === 0 ? (
                                         <p className="text-sm text-gray-500">
-                                            Add skills to your profile through future profile editing.
+                                            Add skills to your profile to help teammates find you.
                                         </p>
                                     ) : (
                                         <div className="flex flex-wrap gap-2">
@@ -168,10 +297,80 @@ const Profile = () => {
                                 </div>
 
                                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                                        Interests
-                                    </h2>
-                                    {interests.length === 0 ? (
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h2 className="text-lg font-semibold text-gray-900">
+                                            Interests
+                                        </h2>
+                                        {!editingInterests ? (
+                                            <button
+                                                onClick={handleStartEditInterests}
+                                                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                            >
+                                                <FiEdit2 className="w-4 h-4" />
+                                                {interests.length === 0 ? 'Add' : 'Edit'}
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={handleSaveInterests}
+                                                    disabled={saving}
+                                                    className="inline-flex items-center gap-1 text-sm text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
+                                                >
+                                                    <FiCheck className="w-4 h-4" />
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    disabled={saving}
+                                                    className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 font-medium disabled:opacity-50"
+                                                >
+                                                    <FiX className="w-4 h-4" />
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {editingInterests ? (
+                                        <div className="space-y-3">
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={interestInput}
+                                                    onChange={(e) => setInterestInput(e.target.value)}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleAddInterest();
+                                                        }
+                                                    }}
+                                                    placeholder="Add an interest (e.g., AI, Web3)"
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                />
+                                                <button
+                                                    onClick={handleAddInterest}
+                                                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                                >
+                                                    <FiPlus className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {tempInterests.map((interest) => (
+                                                    <span
+                                                        key={interest}
+                                                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium"
+                                                    >
+                                                        {interest}
+                                                        <button
+                                                            onClick={() => handleRemoveInterest(interest)}
+                                                            className="hover:text-blue-900"
+                                                        >
+                                                            <FiX className="w-3 h-3" />
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : interests.length === 0 ? (
                                         <p className="text-sm text-gray-500">
                                             Add interests to help teammates and mentors discover you.
                                         </p>

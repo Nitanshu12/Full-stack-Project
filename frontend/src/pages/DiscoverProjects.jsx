@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import  api  from '../api/axios.js';
-import Logo from '../assets/Logo.png';
-import { FiSearch, FiFilter, FiPlus, FiCalendar, FiMapPin, FiBell, FiLogOut } from 'react-icons/fi';
+import api from '../api/axios.js';
+import Header from '../components/Header';
+import { FiSearch, FiFilter, FiPlus, FiCalendar, FiMapPin } from 'react-icons/fi';
 
 const DiscoverProjects = () => {
     const navigate = useNavigate();
@@ -93,69 +92,7 @@ const DiscoverProjects = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <img 
-                            src={Logo} 
-                            alt="CollabSphere Logo" 
-                            className="h-10 w-10 object-contain"
-                        />
-                        <div>
-                            <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                            <p className="text-xs text-gray-500">Build together, faster.</p>
-                        </div>
-                    </div>
-
-                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                        <button 
-                            onClick={() => navigate('/discover-projects')}
-                            className="text-purple-600 transition-colors"
-                        >
-                            Projects
-                        </button>
-                        <button 
-                            onClick={() => navigate('/dashboard')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Dashboard
-                        </button>
-                        <button 
-                            onClick={() => navigate('/smart-matches')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Find Teammates
-                        </button>
-                        <button
-                            onClick={() => navigate('/mentors')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Mentorship
-                        </button>
-                        <button 
-                            onClick={() => navigate('/feed')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Feed
-                        </button>
-                    </nav>
-
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-gray-500 hover:text-gray-900 transition-colors">
-                            <FiBell className="w-5 h-5" />
-                            <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-purple-500" />
-                        </button>
-                        <button
-                            onClick={handleLogout}
-                            className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:border-purple-500 hover:text-purple-600 transition-colors"
-                        >
-                            <FiLogOut />
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
                 {/* Header Section */}

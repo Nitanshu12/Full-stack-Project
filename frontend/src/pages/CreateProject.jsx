@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { axiosPrivate } from '../api/axios';
+import Header from '../components/Header';
 import { FiArrowLeft, FiPlus, FiX } from 'react-icons/fi';
 
 const CreateProject = () => {
@@ -116,6 +117,7 @@ const CreateProject = () => {
 
     return (
         <div className="min-h-screen bg-white">
+            <Header />
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
                 {/* Back to Dashboard Link */}
                 <button

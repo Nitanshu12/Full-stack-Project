@@ -10,11 +10,13 @@ const userLogout = require('../controllers/User/authLogout')
 const allUsers = require('../controllers/User/allUsers')
 const refreshTokenController = require('../controllers/User/refreshToken')
 const googleSigninController = require('../controllers/User/googleSignin')
+const updateProfileController = require('../controllers/User/updateProfile')
 
 router.post("/signup",userSignUpController)
 router.post("/signin",userSignInController)
 router.post("/google-signin", googleSigninController)
 router.get("/user-details",authToken,userDetailsController)
+router.put("/update-profile", authToken, updateProfileController)
 router.get("/userLogout",userLogout)
 router.post("/refresh-token", refreshTokenController)
 
