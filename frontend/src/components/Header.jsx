@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import useAuth from '../hooks/useAuth';
 import Logo from '../assets/Logo.png';
@@ -16,6 +16,7 @@ const getInitials = (name = '') => {
 
 const Header = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { auth, logout } = useAuth();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -42,6 +43,14 @@ const Header = () => {
                 </div>
 
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                    {location.pathname !== '/dashboard' && (
+                        <button 
+                            onClick={() => navigate('/dashboard')}
+                            className="hover:text-purple-600 transition-colors"
+                        >
+                            Dashboard
+                        </button>
+                    )}
                     <button 
                         onClick={() => navigate('/discover-projects')}
                         className="hover:text-purple-600 transition-colors"
