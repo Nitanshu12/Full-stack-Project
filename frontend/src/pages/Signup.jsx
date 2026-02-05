@@ -94,7 +94,6 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header with Logo */}
             <header className="px-6 md:px-12 py-6">
                 <div className="flex items-center gap-2">
                     <img 
@@ -109,7 +108,7 @@ const Signup = () => {
                 </div>
             </header>
 
-            {/* Signup Form Container */}
+          
             <div className="flex items-center justify-center px-4 py-8 md:py-12">
                 <div className="w-full max-w-md">
                     <div className="bg-gradient-to-b from-purple-800 to-blue-600 rounded-2xl p-8 md:p-10 shadow-2xl">
@@ -124,7 +123,7 @@ const Signup = () => {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Name Field */}
+                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Name:</label>
                                 <input
@@ -138,7 +137,7 @@ const Signup = () => {
                                 />
                             </div>
 
-                            {/* Email Field */}
+                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Email:</label>
                                 <input
@@ -152,7 +151,7 @@ const Signup = () => {
                                 />
                             </div>
 
-                            {/* Password Field */}
+                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Password:</label>
                                 <input
@@ -166,7 +165,7 @@ const Signup = () => {
                                 />
                             </div>
 
-                            {/* Sign Up Button */}
+                            
                             <button
                                 type="submit"
                                 className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all active:scale-98"
@@ -175,7 +174,7 @@ const Signup = () => {
                             </button>
                         </form>
 
-                        {/* Google Sign In Button */}
+                       
                         <button
                             type="button"
                             onClick={handleGoogleSignIn}
@@ -190,7 +189,7 @@ const Signup = () => {
                             </svg>
                         </button>
 
-                        {/* Login Link */}
+                        
                         <div className="mt-6 text-center text-white text-sm">
                             Already have an account?{' '}
                             <Link to="/login" className="text-blue-200 hover:text-blue-100 font-semibold underline">

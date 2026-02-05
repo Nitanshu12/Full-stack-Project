@@ -5,7 +5,7 @@ const Mentors = () => {
         <div className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-50">
             <Header />
 
-            {/* Main */}
+            
             <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16">
                 <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 flex flex-col md:flex-row gap-10 items-center">
                     <div className="flex-1 space-y-5">
