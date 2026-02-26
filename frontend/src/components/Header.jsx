@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import useAuth from '../hooks/useAuth';
 import Logo from '../assets/Logo.png';
-import { FiLogOut } from 'react-icons/fi';
+import { FiLogOut, FiShield } from 'react-icons/fi';
 
 const getInitials = (name = '') => {
     const parts = name.trim().split(' ');
@@ -14,11 +14,38 @@ const getInitials = (name = '') => {
     return (first + last).toUpperCase();
 };
 
+// Navigation links per role
+const NAV_CONFIG = {
+    STUDENT: [
+        { label: 'Dashboard', path: '/student/dashboard' },
+        { label: 'Projects', path: '/student/discover-projects' },
+        { label: 'Find Teammates', path: '/student/smart-matches' },
+        { label: 'Mentorship', path: '/student/mentors' },
+        { label: 'Feed', path: '/feed' }
+    ],
+    MENTOR: [
+        { label: 'Dashboard', path: '/mentor/dashboard' },
+        { label: 'Feed', path: '/feed' }
+    ],
+    ORGANIZATION: [
+        { label: 'Dashboard', path: '/organization/dashboard' },
+        { label: 'Feed', path: '/feed' }
+    ],
+    ADMIN: [
+        { label: 'Dashboard', path: '/admin/dashboard' },
+        { label: 'Users', path: '/admin/users' },
+        { label: 'Feed', path: '/feed' }
+    ]
+};
+
 const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { auth, logout } = useAuth();
+    const { auth, logout, getDashboardPath } = useAuth();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+    const userRole = auth.user?.role || 'STUDENT';
+    const navLinks = NAV_CONFIG[userRole] || NAV_CONFIG.STUDENT;
 
     const handleLogout = async () => {
         setIsProfileMenuOpen(false);
@@ -29,7 +56,7 @@ const Header = () => {
     return (
         <header className="bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(getDashboardPath(userRole))}>
                     <img 
                         src={Logo} 
                         alt="CollabSphere Logo" 
@@ -43,38 +70,22 @@ const Header = () => {
                 </div>
 
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                    {location.pathname !== '/dashboard' && (
-                        <button 
-                            onClick={() => navigate('/dashboard')}
-                            className="hover:text-purple-600 transition-colors"
-                        >
-                            Dashboard
-                        </button>
+                    {navLinks
+                        .filter((link) => link.path !== location.pathname)
+                        .map((link) => (
+                            <button
+                                key={link.path}
+                                onClick={() => navigate(link.path)}
+                                className="hover:text-purple-600 transition-colors"
+                            >
+                                {link.label}
+                            </button>
+                        ))}
+                    {userRole === 'ADMIN' && (
+                        <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 font-semibold">
+                            <FiShield className="w-3 h-3" /> Admin
+                        </span>
                     )}
-                    <button 
-                        onClick={() => navigate('/discover-projects')}
-                        className="hover:text-purple-600 transition-colors"
-                    >
-                        Projects
-                    </button>
-                    <button 
-                        onClick={() => navigate('/smart-matches')}
-                        className="hover:text-purple-600 transition-colors"
-                    >
-                        Find Teammates
-                    </button>
-                    <button 
-                        onClick={() => navigate('/mentors')}
-                        className="hover:text-purple-600 transition-colors"
-                    >
-                        Mentorship
-                    </button>
-                    <button 
-                        onClick={() => navigate('/feed')}
-                        className="hover:text-purple-600 transition-colors"
-                    >
-                        Feed
-                    </button>
                 </nav>
 
                 <div className="flex items-center gap-4">
@@ -88,6 +99,10 @@ const Header = () => {
                         </button>
                         {isProfileMenuOpen && (
                             <div className="absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
+                                <div className="px-4 py-2 border-b border-gray-100">
+                                    <p className="text-xs font-semibold text-gray-900">{auth.user?.name}</p>
+                                    <p className="text-xs text-gray-500 capitalize">{userRole.toLowerCase()}</p>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setIsProfileMenuOpen(false);
@@ -115,4 +130,3 @@ const Header = () => {
 };
 
 export default Header;
-

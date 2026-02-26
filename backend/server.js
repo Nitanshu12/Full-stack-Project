@@ -3,10 +3,22 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const connectDB = require('./config/db')
+
+// Shared auth routes
 const authRouter = require('./routes/authRoutes.js')
-const projectRouter = require('./routes/projectRoutes.js')
+
+// Shared content routes (accessible by all authenticated users)
 const postRouter = require('./routes/postRoutes.js')
+
+// Legacy routes (kept for backward compatibility)
+const projectRouter = require('./routes/projectRoutes.js')
 const connectionRouter = require('./routes/connectionRoutes.js')
+
+// Role-scoped routes
+const studentRouter = require('./routes/studentRoutes.js')
+const mentorRouter = require('./routes/mentorRoutes.js')
+const organizationRouter = require('./routes/organizationRoutes.js')
+const adminRouter = require('./routes/adminRoutes.js')
 
 
 const app = express()
@@ -40,10 +52,21 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
+// Shared auth routes
 app.use("/api", authRouter)
-app.use("/api/project", projectRouter)
+
+// Shared content routes
 app.use("/api/post", postRouter)
+
+// Legacy routes (backward compatibility)
+app.use("/api/project", projectRouter)
 app.use("/api/connections", connectionRouter)
+
+// Role-scoped routes
+app.use("/api/student", studentRouter)
+app.use("/api/mentor", mentorRouter)
+app.use("/api/organization", organizationRouter)
+app.use("/api/admin", adminRouter)
 
 const PORT = 8080 || process.env.PORT
 

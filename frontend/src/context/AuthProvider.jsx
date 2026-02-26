@@ -62,8 +62,8 @@ export const AuthProvider = ({ children }) => {
         return { success: true, message, data, error: false };
     };
 
-    const signup = async (name, email, password) => {
-        const response = await api.post('/signup', { name, email, password });
+    const signup = async (name, email, password, role = 'STUDENT', extraFields = {}) => {
+        const response = await api.post('/signup', { name, email, password, role, ...extraFields });
         const { success, message, data, error } = response.data;
 
         return {
@@ -84,8 +84,21 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    /**
+     * Returns the dashboard path for the current user's role
+     */
+    const getDashboardPath = (role) => {
+        switch (role) {
+            case 'ADMIN': return '/admin/dashboard';
+            case 'MENTOR': return '/mentor/dashboard';
+            case 'ORGANIZATION': return '/organization/dashboard';
+            case 'STUDENT':
+            default: return '/student/dashboard';
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ auth, setAuth, login, loginWithGoogle, signup, logout, loading }}>
+        <AuthContext.Provider value={{ auth, setAuth, login, loginWithGoogle, signup, logout, loading, getDashboardPath }}>
             {!loading && children}
         </AuthContext.Provider>
     );

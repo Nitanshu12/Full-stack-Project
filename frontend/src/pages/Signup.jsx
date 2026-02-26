@@ -3,14 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Logo from '../assets/Logo.png';
 
+const ROLES = [
+    { key: 'STUDENT', label: 'Student' },
+    { key: 'MENTOR', label: 'Mentor' },
+    { key: 'ORGANIZATION', label: 'Organization' }
+];
+
 const Signup = () => {
+    const [selectedRole, setSelectedRole] = useState('STUDENT');
     const [data, setData] = useState({
         name: "",
         email: "",
-        password: ""
+        password: "",
+        // Mentor fields
+        expertise: "",
+        bio: "",
+        availability: "",
+        // Organization fields
+        orgName: "",
+        orgDescription: "",
+        website: ""
     });
     const [error, setError] = useState("");
-    const { signup, loginWithGoogle } = useAuth();
+    const { signup, loginWithGoogle, getDashboardPath } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -23,7 +38,19 @@ const Signup = () => {
         setError("");
 
         try {
-            const res = await signup(data.name, data.email, data.password);
+            const extraFields = {};
+            if (selectedRole === 'MENTOR') {
+                extraFields.expertise = data.expertise ? data.expertise.split(',').map(s => s.trim()) : [];
+                extraFields.bio = data.bio;
+                extraFields.availability = data.availability;
+            }
+            if (selectedRole === 'ORGANIZATION') {
+                extraFields.orgName = data.orgName;
+                extraFields.orgDescription = data.orgDescription;
+                extraFields.website = data.website;
+            }
+
+            const res = await signup(data.name, data.email, data.password, selectedRole, extraFields);
             if (res.success) {
                 navigate('/login');
             } else {
@@ -71,7 +98,8 @@ const Signup = () => {
                                 const idToken = response.credential;
                                 const res = await loginWithGoogle(idToken);
                                 if (res.success) {
-                                    navigate('/dashboard');
+                                    const role = res.data?.user?.role || 'STUDENT';
+                                    navigate(getDashboardPath(role));
                                 } else {
                                     setError(res.message || "Google signup failed");
                                 }
@@ -108,13 +136,30 @@ const Signup = () => {
                 </div>
             </header>
 
-          
             <div className="flex items-center justify-center px-4 py-8 md:py-12">
                 <div className="w-full max-w-md">
                     <div className="bg-gradient-to-b from-purple-800 to-blue-600 rounded-2xl p-8 md:p-10 shadow-2xl">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 text-center uppercase tracking-wide">
-                            WELCOME
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 text-center uppercase tracking-wide">
+                            JOIN US
                         </h2>
+
+                        {/* Role Selection Tabs */}
+                        <div className="flex rounded-xl overflow-hidden mb-6 bg-white/10 p-1 gap-1">
+                            {ROLES.map((role) => (
+                                <button
+                                    key={role.key}
+                                    type="button"
+                                    onClick={() => setSelectedRole(role.key)}
+                                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                                        selectedRole === role.key
+                                            ? 'bg-white text-purple-700 shadow-md'
+                                            : 'text-white/80 hover:text-white hover:bg-white/10'
+                                    }`}
+                                >
+                                    {role.label}
+                                </button>
+                            ))}
+                        </div>
 
                         {error && (
                             <div className="bg-red-500/20 border border-red-300 text-red-100 px-4 py-2 rounded-lg mb-6 text-sm text-center">
@@ -122,8 +167,7 @@ const Signup = () => {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-white font-medium mb-2">Name:</label>
                                 <input
@@ -137,7 +181,6 @@ const Signup = () => {
                                 />
                             </div>
 
-                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Email:</label>
                                 <input
@@ -151,7 +194,6 @@ const Signup = () => {
                                 />
                             </div>
 
-                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Password:</label>
                                 <input
@@ -165,16 +207,92 @@ const Signup = () => {
                                 />
                             </div>
 
-                            
+                            {/* Mentor-specific fields */}
+                            {selectedRole === 'MENTOR' && (
+                                <>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Expertise (comma-separated):</label>
+                                        <input
+                                            type="text"
+                                            name="expertise"
+                                            value={data.expertise}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                            placeholder="e.g. React, Node.js, AWS"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Bio:</label>
+                                        <textarea
+                                            name="bio"
+                                            value={data.bio}
+                                            onChange={handleChange}
+                                            rows="2"
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
+                                            placeholder="Tell us about yourself"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Availability:</label>
+                                        <input
+                                            type="text"
+                                            name="availability"
+                                            value={data.availability}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                            placeholder="e.g. Weekdays 6-8 PM"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Organization-specific fields */}
+                            {selectedRole === 'ORGANIZATION' && (
+                                <>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Organization Name:</label>
+                                        <input
+                                            type="text"
+                                            name="orgName"
+                                            value={data.orgName}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                            placeholder="Enter organization name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Description:</label>
+                                        <textarea
+                                            name="orgDescription"
+                                            value={data.orgDescription}
+                                            onChange={handleChange}
+                                            rows="2"
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
+                                            placeholder="Describe your organization"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-white font-medium mb-2">Website:</label>
+                                        <input
+                                            type="url"
+                                            name="website"
+                                            value={data.website}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                            placeholder="https://example.com"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
                             <button
                                 type="submit"
                                 className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all active:scale-98"
                             >
-                                Sign Up
+                                Sign Up as {ROLES.find(r => r.key === selectedRole)?.label}
                             </button>
                         </form>
 
-                       
                         <button
                             type="button"
                             onClick={handleGoogleSignIn}
@@ -189,7 +307,6 @@ const Signup = () => {
                             </svg>
                         </button>
 
-                        
                         <div className="mt-6 text-center text-white text-sm">
                             Already have an account?{' '}
                             <Link to="/login" className="text-blue-200 hover:text-blue-100 font-semibold underline">

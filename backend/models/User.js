@@ -20,7 +20,39 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        default: "GENERAL"
+        enum: ['STUDENT', 'MENTOR', 'ORGANIZATION', 'ADMIN'],
+        default: 'STUDENT'
+    },
+    status: {
+        type: String,
+        enum: ['PENDING', 'ACTIVE', 'BLOCKED'],
+        default: 'ACTIVE'
+    },
+    // Mentor-specific fields
+    expertise: {
+        type: [String],
+        default: []
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
+    availability: {
+        type: String,
+        default: ''
+    },
+    // Organization-specific fields
+    orgName: {
+        type: String,
+        default: ''
+    },
+    orgDescription: {
+        type: String,
+        default: ''
+    },
+    website: {
+        type: String,
+        default: ''
     }
 },{
     timestamps : true

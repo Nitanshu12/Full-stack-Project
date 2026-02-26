@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-import { FaEnvelope, FaLock } from 'react-icons/fa';
 import Logo from '../assets/Logo.png';
+
+const ROLES = [
+    { key: 'STUDENT', label: 'Student' },
+    { key: 'MENTOR', label: 'Mentor' },
+    { key: 'ORGANIZATION', label: 'Organization' }
+];
+
 const Login = () => {
     const [data, setData] = useState({
         email: "",
         password: ""
     });
     const [error, setError] = useState("");
-    const { login, loginWithGoogle } = useAuth();
+    const { login, loginWithGoogle, getDashboardPath } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -24,7 +30,8 @@ const Login = () => {
         try {
             const res = await login(data.email, data.password);
             if (res.success) {
-                navigate('/dashboard');
+                const role = res.data?.user?.role || 'STUDENT';
+                navigate(getDashboardPath(role));
             } else {
                 setError(res.message || "Login failed");
             }
@@ -42,7 +49,6 @@ const Login = () => {
                 return;
             }
 
-            
             if (!window.google || !window.google.accounts || !window.google.accounts.id) {
                 await new Promise((resolve, reject) => {
                     const existingScript = document.getElementById('google-identity-script');
@@ -71,7 +77,8 @@ const Login = () => {
                                 const idToken = response.credential;
                                 const res = await loginWithGoogle(idToken);
                                 if (res.success) {
-                                    navigate('/dashboard');
+                                    const role = res.data?.user?.role || 'STUDENT';
+                                    navigate(getDashboardPath(role));
                                 } else {
                                     setError(res.message || "Google login failed");
                                 }
@@ -109,7 +116,6 @@ const Login = () => {
                 </div>
             </header>
 
-            
             <div className="flex items-center justify-center px-4 py-8 md:py-12">
                 <div className="w-full max-w-md">
                     <div className="bg-gradient-to-b from-purple-800 to-blue-600 rounded-2xl p-8 md:p-10 shadow-2xl">
@@ -138,7 +144,6 @@ const Login = () => {
                                 />
                             </div>
 
-                            
                             <div>
                                 <label className="block text-white font-medium mb-2">Password:</label>
                                 <input
@@ -152,7 +157,6 @@ const Login = () => {
                                 />
                             </div>
 
-                        
                             <button
                                 type="submit"
                                 className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all active:scale-98"
@@ -160,7 +164,6 @@ const Login = () => {
                                 Login
                             </button>
                         </form>
-
 
                         <button
                             type="button"
@@ -176,7 +179,6 @@ const Login = () => {
                             </svg>
                         </button>
 
-                       
                         <div className="mt-6 text-center text-white text-sm">
                             Don't have any account?{' '}
                             <Link to="/signup" className="text-blue-200 hover:text-blue-100 font-semibold underline">

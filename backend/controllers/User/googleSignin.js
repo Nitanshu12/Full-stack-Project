@@ -40,13 +40,24 @@ async function googleSigninController(req, res) {
                 name,
                 email,
                 password: '',
-                role: 'GENERAL'
+                role: 'STUDENT',
+                status: 'ACTIVE'
+            });
+        }
+
+        // Check if account is blocked
+        if (user.status === 'BLOCKED') {
+            return res.status(403).json({
+                message: 'Your account has been blocked. Please contact support.',
+                error: true,
+                success: false
             });
         }
 
         const tokenData = {
             _id: user._id,
-            email: user.email
+            email: user.email,
+            role: user.role
         };
 
         const accessToken = await jwt.sign(
@@ -79,7 +90,8 @@ async function googleSigninController(req, res) {
                     _id: user._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role
+                    role: user.role,
+                    status: user.status
                 }
             },
             success: true,
@@ -96,5 +108,3 @@ async function googleSigninController(req, res) {
 }
 
 module.exports = googleSigninController;
-
-
