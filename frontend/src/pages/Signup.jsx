@@ -15,6 +15,8 @@ const Signup = () => {
         name: "",
         email: "",
         password: "",
+        skills:[],
+        Interset:[],
         // Mentor fields
         expertise: "",
         bio: "",
@@ -204,6 +206,30 @@ const Signup = () => {
                                     required
                                     className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                                     placeholder="Enter your password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-white font-medium mb-2">Skills:</label>
+                                <input
+                                    type="text"
+                                    name="skills"
+                                    value={data.skills}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                    placeholder="Enter your skills"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-white font-medium mb-2">Interests</label>
+                                <input
+                                    type="text"
+                                    name="interests"
+                                    value={data.interests}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                                    placeholder="Enter your interests"
                                 />
                             </div>
 

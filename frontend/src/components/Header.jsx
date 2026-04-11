@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import useAuth from '../hooks/useAuth';
 import Logo from '../assets/Logo.png';
 import { FiLogOut, FiShield } from 'react-icons/fi';
@@ -43,6 +44,7 @@ const Header = () => {
     const location = useLocation();
     const { auth, logout, getDashboardPath } = useAuth();
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const logoRef = useRef(null);
 
     const userRole = auth.user?.role || 'STUDENT';
     const navLinks = NAV_CONFIG[userRole] || NAV_CONFIG.STUDENT;
@@ -53,10 +55,22 @@ const Header = () => {
         navigate('/login');
     };
 
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            gsap.from(logoRef.current, {
+                opacity: 0,
+                y: -40,
+                duration: 1,
+                ease: 'power3.out',
+            });
+        });
+        return () => ctx.revert();
+    }, []);
+
     return (
         <header className="bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(getDashboardPath(userRole))}>
+                <div ref={logoRef} className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(getDashboardPath(userRole))}>
                     <img 
                         src={Logo} 
                         alt="CollabSphere Logo" 
