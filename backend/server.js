@@ -22,27 +22,36 @@ const adminRouter = require('./routes/adminRoutes.js')
 
 
 const app = express()
-const allowedOrigins = [
+
+// Normalize and collect all allowed origins
+const rawOrigins = [
     process.env.FRONTEND_URL,
-    process.env.BACKEND_URL1,
+    process.env.FRONTEND_URL1, // Fixed from BACKEND_URL1
     'https://collabsphere-five.vercel.app',
-    'http://localhost:5173', // Vite default dev server
-    'http://localhost:3000'  // Common React dev server
-].filter(Boolean); // Remove undefined values
+    'http://localhost:5173',
+    'http://localhost:5174', // Added for cases where 5173 is in use
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://localhost:3000'
+];
+
+// Remove trailing slashes and filter out empty values
+const allowedOrigins = rawOrigins
+    .filter(Boolean)
+    .map(url => url.replace(/\/$/, ''));
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
         if (!origin) return callback(null, true);
         
-        // Check if origin is in allowed list
+        // Normalize search: origin sent by browser never has trailing slash
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            // Log for debugging
             console.log('CORS blocked origin:', origin);
             console.log('Allowed origins:', allowedOrigins);
-            callback(new Error("CORS blocked: " + origin));
+            callback(new Error("CORS blocked by CollabSphere Policy"));
         }
     },
     credentials: true,

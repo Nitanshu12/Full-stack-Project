@@ -5,7 +5,11 @@ import Header from '../components/Header';
 import {
     FiZap,
     FiMail,
-    FiExternalLink
+    FiExternalLink,
+    FiCpu,
+    FiTarget,
+    FiHeart,
+    FiLayers
 } from 'react-icons/fi';
 import useAuth from '../hooks/useAuth';
 
@@ -17,6 +21,7 @@ const SmartMatches = () => {
     const [error, setError] = useState(null);
     const [connectingIds, setConnectingIds] = useState(new Set());
     const [connectedIds, setConnectedIds] = useState(new Set());
+    const [expandedCard, setExpandedCard] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -93,9 +98,25 @@ const SmartMatches = () => {
     };
 
     const getMatchColor = (score) => {
-        if (score >= 85) return 'bg-blue-500';
-        if (score >= 70) return 'bg-purple-500';
+        if (score >= 85) return 'bg-emerald-500';
+        if (score >= 70) return 'bg-blue-500';
+        if (score >= 50) return 'bg-purple-500';
         return 'bg-gray-400';
+    };
+
+    const getMatchLabel = (score) => {
+        if (score >= 85) return 'Excellent Match';
+        if (score >= 70) return 'Strong Match';
+        if (score >= 50) return 'Good Match';
+        if (score >= 30) return 'Partial Match';
+        return 'Low Match';
+    };
+
+    const getScoreBarColor = (score) => {
+        if (score >= 70) return 'bg-emerald-400';
+        if (score >= 50) return 'bg-blue-400';
+        if (score >= 30) return 'bg-yellow-400';
+        return 'bg-gray-300';
     };
 
     return (
@@ -107,30 +128,61 @@ const SmartMatches = () => {
                 {/* Header Section */}
                 <div className="mb-8 md:mb-12">
                     <div className="flex items-center gap-3 mb-3">
-                        <FiZap className="w-8 h-8 text-blue-500" />
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Smart Matches</h1>
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500">
+                            <FiCpu className="w-6 h-6 text-white" />
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">AI Smart Matches</h1>
                     </div>
-                    <p className="text-gray-600 text-base md:text-lg ml-11">
+                    <p className="text-gray-600 text-base md:text-lg ml-14">
                         AI-powered teammate recommendations based on your skills and interests
                     </p>
                 </div>
 
                 {/* How Matching Works Card */}
-                <div className="bg-gray-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 mb-3">
-                        <FiZap className="w-6 h-6 text-purple-600" />
-                        <h2 className="text-xl font-semibold text-gray-900">How Matching Works</h2>
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 border border-purple-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <FiCpu className="w-6 h-6 text-purple-600" />
+                        <h2 className="text-xl font-semibold text-gray-900">How AI Matching Works</h2>
                     </div>
-                    <p className="text-gray-600 leading-relaxed">
-                        Our AI analyzes your skills, interests, projects, and location to find the perfect teammates. 
-                        Match scores are calculated based on skill complementarity, shared interests, and collaboration style.
-                    </p>
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1 p-1.5 bg-purple-100 rounded-lg">
+                                <FiTarget className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-800 text-sm">Skills Analysis</p>
+                                <p className="text-gray-500 text-xs">TF-IDF vectorization compares your technical skills with other users</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1 p-1.5 bg-blue-100 rounded-lg">
+                                <FiHeart className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-800 text-sm">Interest Matching</p>
+                                <p className="text-gray-500 text-xs">Cosine similarity finds users with aligned interests and goals</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1 p-1.5 bg-green-100 rounded-lg">
+                                <FiLayers className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-800 text-sm">Overlap Detection</p>
+                                <p className="text-gray-500 text-xs">Jaccard index measures exact skill overlap for precise matching</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Loading State */}
                 {loading && (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                    <div className="flex flex-col items-center justify-center py-16">
+                        <div className="relative">
+                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
+                            <FiCpu className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-purple-600" />
+                        </div>
+                        <p className="mt-4 text-gray-500 font-medium">AI is analyzing matches...</p>
                     </div>
                 )}
 
@@ -152,11 +204,14 @@ const SmartMatches = () => {
                             users.map((user) => (
                                 <div
                                     key={user._id}
-                                    className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
+                                    className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-purple-200"
                                 >
                                     {/* Match Score Badge */}
-                                    <div className="flex justify-end mb-4">
-                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-sm font-medium ${getMatchColor(user.matchScore || 0)}`}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                                            {getMatchLabel(user.matchScore || 0)}
+                                        </span>
+                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-sm font-bold ${getMatchColor(user.matchScore || 0)}`}>
                                             <FiZap className="w-3.5 h-3.5" />
                                             <span>{user.matchScore || 0}%</span>
                                         </div>
@@ -166,7 +221,7 @@ const SmartMatches = () => {
                                     <div className="flex items-start gap-4 mb-4">
                                         {/* Avatar */}
                                         <div className="flex-shrink-0">
-                                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-xl">
+                                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-xl shadow-md">
                                                 {getInitials(user.name)}
                                             </div>
                                         </div>
@@ -176,9 +231,65 @@ const SmartMatches = () => {
                                             <h3 className="text-lg font-semibold text-gray-900 truncate">
                                                 {user.name || 'Anonymous'}
                                             </h3>
-                                            <p className="text-sm text-gray-500">student</p>
+                                            <p className="text-sm text-gray-500 capitalize">{(user.role || 'student').toLowerCase()}</p>
                                         </div>
                                     </div>
+
+                                    {/* AI Match Breakdown (collapsible) */}
+                                    {user.matchBreakdown && (
+                                        <div className="mb-4">
+                                            <button
+                                                onClick={() => setExpandedCard(expandedCard === user._id ? null : user._id)}
+                                                className="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 mb-2"
+                                            >
+                                                <FiCpu className="w-3 h-3" />
+                                                {expandedCard === user._id ? 'Hide' : 'Show'} AI Breakdown
+                                            </button>
+                                            {expandedCard === user._id && (
+                                                <div className="bg-gray-50 rounded-lg p-3 space-y-2 animate-fadeIn">
+                                                    {/* Skill Similarity */}
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-600">Skill Match</span>
+                                                            <span className="font-medium">{user.matchBreakdown.skillSimilarity ?? 0}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                                            <div
+                                                                className={`h-1.5 rounded-full transition-all duration-500 ${getScoreBarColor(user.matchBreakdown.skillSimilarity ?? 0)}`}
+                                                                style={{ width: `${Math.min(user.matchBreakdown.skillSimilarity ?? 0, 100)}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    {/* Interest Similarity */}
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-600">Interest Match</span>
+                                                            <span className="font-medium">{user.matchBreakdown.interestSimilarity ?? 0}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                                            <div
+                                                                className={`h-1.5 rounded-full transition-all duration-500 ${getScoreBarColor(user.matchBreakdown.interestSimilarity ?? 0)}`}
+                                                                style={{ width: `${Math.min(user.matchBreakdown.interestSimilarity ?? 0, 100)}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    {/* Skill Overlap */}
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-600">Skill Overlap</span>
+                                                            <span className="font-medium">{user.matchBreakdown.skillOverlap ?? 0}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                                            <div
+                                                                className={`h-1.5 rounded-full transition-all duration-500 ${getScoreBarColor(user.matchBreakdown.skillOverlap ?? 0)}`}
+                                                                style={{ width: `${Math.min(user.matchBreakdown.skillOverlap ?? 0, 100)}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Skills */}
                                     <div className="mb-4">
@@ -256,10 +367,19 @@ const SmartMatches = () => {
                         )}
                     </div>
                 )}
+
+                {/* Algorithm footer note */}
+                {!loading && users.length > 0 && (
+                    <div className="mt-8 text-center">
+                        <p className="text-xs text-gray-400 flex items-center justify-center gap-1.5">
+                            <FiCpu className="w-3 h-3" />
+                            Powered by TF-IDF Cosine Similarity + Jaccard Index
+                        </p>
+                    </div>
+                )}
             </main>
         </div>
     );
 };
 
 export default SmartMatches;
-

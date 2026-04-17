@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "ml:start": "cd ml && ../venv/bin/python recommender.py 5001",
+    "ml:test": "cd ml && ../venv/bin/python -m pytest test_recommender.py -v",
+    "dev:all": "npm run ml:start & npm run dev",
     "seed": "node seedUsers.js",
     "seed:projects": "node seedProjects.js",
     "seed:all": "node seedUsers.js && node seedProjects.js",

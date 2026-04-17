@@ -10,6 +10,7 @@ const deleteProjectController = require('../controllers/Project/deleteProject');
 const createConnectionController = require('../controllers/User/createConnection');
 const getMyConnectionsController = require('../controllers/User/getMyConnections');
 const allUsers = require('../controllers/User/allUsers');
+const getRecommendedProjects = require('../controllers/Project/getRecommendedProjects');
 
 // All routes require student (or admin) role
 router.use(authToken, authorizeRole('STUDENT', 'ADMIN'));
@@ -25,7 +26,10 @@ router.delete('/projects/:id', deleteProjectController);
 router.post('/connections/connect', createConnectionController);
 router.get('/connections/my', getMyConnectionsController);
 
-// Smart Matches
+// AI-Powered Smart Matches (users)
 router.get('/matches', allUsers);
+
+// AI-Powered Project Recommendations
+router.get('/recommended-projects', getRecommendedProjects);
 
 module.exports = router;

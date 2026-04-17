@@ -41,6 +41,7 @@ const Home = () => {
     return (
         <div className="min-h-screen overflow-x-hidden" style={{
             background: 'linear-gradient(to right, #DDE9F6 0%, rgba(102, 126, 153, 0.6) 46%)'
+            
         }}>
 
             {/* ──────────── Header ──────────── */}
@@ -67,19 +68,18 @@ const Home = () => {
                     </button>
                     <button
                         onClick={() => navigate('/signup')}
-                        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        className="px-6 py-2 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors" style={{
+                            backgroundColor:"#009cf8"
+                        }}
                     >
                         Get Started
                     </button>
                 </div>
             </header>
-
-            {/* ──────────── Hero ──────────── */}
             <main className="px-6 md:px-12 py-12 md:py-20">
                 <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
 
                     <div className="space-y-6">
-                        {/* heroHeadingRef */}
                         <h2
                             ref={heroHeadingRef}
                             className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight"
@@ -88,8 +88,6 @@ const Home = () => {
                             <br />
                             &amp; Mentors Easily
                         </h2>
-
-                        {/* heroSubRef */}
                         <p
                             ref={heroSubRef}
                             className="text-lg md:text-xl text-gray-600 leading-relaxed"
@@ -98,18 +96,17 @@ const Home = () => {
                             <br />
                             and experienced mentors
                         </p>
-
-                        {/* heroButtonRef */}
                         <button
                             ref={heroButtonRef}
                             onClick={() => navigate('/signup')}
-                            className="px-8 py-4 bg-blue-600 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                            className="px-8 py-4 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl" style={{
+                                backgroundColor:"#009cf8"
+                            }}
                         >
                             Find Collaborators
                         </button>
                     </div>
 
-                    {/* heroImageRef */}
                     <div ref={heroImageRef} className="flex justify-center md:justify-end">
                         <img
                             src={HeroImage}
@@ -120,15 +117,16 @@ const Home = () => {
                 </div>
             </main>
 
-            {/* ──────────── Features ──────────── */}
-            <section className="px-6 md:px-12 py-16 md:py-24 bg-gray-50">
+            <section className="px-6 md:px-12 py-16 md:py-24" style={{
+                backgroundColor:"#eaf2f8",
+                boxShadow: "0 -20px 40px rgba(0,0,0,0.08)"
+            }}>
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
                         Key Features
                     </h2>
                     <div className="grid md:grid-cols-3 gap-8">
 
-                        {/* card1Ref */}
                         <div ref={card1Ref} className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
