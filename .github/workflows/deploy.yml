@@ -34,39 +34,39 @@ jobs:
         with:
           terraform_version: "1.7.0"
 
-      # Downloads the AWS provider plugin
       - name: Terraform Init
         working-directory: terraform
         run: terraform init
 
-      # Shows what WILL be created (dry run — nothing happens yet)
+      # TF_VAR_* env vars are the safest way to pass secrets to Terraform.
+      # Using -var="region=${{ secrets.AWS_REGION }}" inside a shell string
+      # causes quoting issues — Terraform receives a malformed/masked value.
       - name: Terraform Plan
         working-directory: terraform
-        run: |
-          terraform plan \
-            -var="aws_region=${{ secrets.AWS_REGION }}" \
-            -var="app_name=collabsphere" \
-            -var="image_tag=latest"
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_app_name:   collabsphere
+          TF_VAR_image_tag:  latest
+        run: terraform plan
 
-      # Actually creates the ECR repositories and ECS cluster on AWS
       - name: Terraform Apply
         working-directory: terraform
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_app_name:   collabsphere
+          TF_VAR_image_tag:  latest
         run: |
-          terraform apply -auto-approve \
-            -var="aws_region=${{ secrets.AWS_REGION }}" \
-            -var="app_name=collabsphere" \
-            -var="image_tag=latest"
-
+          terraform apply -auto-approve
           echo "✅ ECR repositories and ECS cluster are ready!"
 
   # ════════════════════════════════════════════════════════
   # JOB 2: DOCKER — Build images and push to ECR
-  # This runs AFTER terraform so ECR repos already exist
+  # Runs AFTER terraform so ECR repos already exist
   # ════════════════════════════════════════════════════════
   docker:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: terraform    # ← Wait for ECR repos to be created first
+    needs: terraform
 
     steps:
       - name: Checkout repository
@@ -80,39 +80,28 @@ jobs:
           aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region:            ${{ secrets.AWS_REGION }}
 
-      # Generates a temporary Docker login token for ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build backend image and push to the ECR repo Terraform just created
       - name: Build and push backend Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
           echo "🔨 Building backend image..."
-          docker build \
-            --tag $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG \
-            ./backend
-
+          docker build --tag $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG ./backend
           echo "📤 Pushing backend image to ECR..."
           docker push $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG
+          echo "✅ Done: $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG"
 
-          echo "✅ Backend image pushed: $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG"
-
-      # Build frontend image and push to the ECR repo Terraform just created
       - name: Build and push frontend Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: latest
         run: |
           echo "🔨 Building frontend image..."
-          docker build \
-            --tag $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG \
-            ./frontend
-
+          docker build --tag $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG ./frontend
           echo "📤 Pushing frontend image to ECR..."
           docker push $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG
-
-          echo "✅ Frontend image pushed: $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG"
+          echo "✅ Done: $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG"
