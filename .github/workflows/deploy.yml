@@ -1,0 +1,107 @@
+
+name: Deploy CollabSphere to AWS
+
+on:
+  push:
+    branches:
+      - main              # Run automatically on every push to main
+  workflow_dispatch:      # Also allow manual trigger from GitHub UI
+
+jobs:
+
+  docker:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest  # Fresh Ubuntu VM provided by GitHub
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}   # Required for AWS Academy temp credentials
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push backend Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          echo "🔨 Building backend image..."
+          docker build \
+            --tag $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG \
+            ./backend
+
+          echo "📤 Pushing backend image to ECR..."
+          docker push $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG
+
+          echo "✅ Backend image pushed: $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG"
+
+ 
+      - name: Build and push frontend Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          echo "🔨 Building frontend image..."
+          docker build \
+            --tag $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG \
+            ./frontend
+
+          echo "📤 Pushing frontend image to ECR..."
+          docker push $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG
+
+          echo "✅ Frontend image pushed: $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG"
+
+  terraform:
+    name: Provision AWS Infrastructure (Terraform)
+    runs-on: ubuntu-latest
+    needs: docker           # ← Only runs after Job 1 (docker) succeeds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}   # Required for AWS Academy temp credentials
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        working-directory: terraform   
+        run: |
+          echo "🚀 Initialising Terraform..."
+          terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          echo "📋 Planning infrastructure changes..."
+          terraform plan \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="app_name=collabsphere" \
+            -var="image_tag=latest"
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          echo "⚙️  Applying infrastructure changes..."
+          terraform apply -auto-approve \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="app_name=collabsphere" \
+            -var="image_tag=latest"
+
+          echo "✅ Infrastructure is ready!"
