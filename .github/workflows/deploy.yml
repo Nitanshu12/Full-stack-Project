@@ -4,14 +4,18 @@ name: Deploy CollabSphere to AWS
 on:
   push:
     branches:
-      - main              # Run automatically on every push to main
-  workflow_dispatch:      # Also allow manual trigger from GitHub UI
+      - main
+  workflow_dispatch:
 
 jobs:
 
-  docker:
-    name: Build & Push Docker Images
-    runs-on: ubuntu-latest  # Fresh Ubuntu VM provided by GitHub
+  # ════════════════════════════════════════════════════════
+  # JOB 1: TERRAFORM — Create ECR repos + ECS cluster FIRST
+  # ECR repositories must exist before we can push images to them
+  # ════════════════════════════════════════════════════════
+  terraform:
+    name: Provision AWS Infrastructure (Terraform)
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -22,12 +26,66 @@ jobs:
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}   # Required for AWS Academy temp credentials
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region:            ${{ secrets.AWS_REGION }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      # Downloads the AWS provider plugin
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      # Shows what WILL be created (dry run — nothing happens yet)
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          terraform plan \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="app_name=collabsphere" \
+            -var="image_tag=latest"
+
+      # Actually creates the ECR repositories and ECS cluster on AWS
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="app_name=collabsphere" \
+            -var="image_tag=latest"
+
+          echo "✅ ECR repositories and ECS cluster are ready!"
+
+  # ════════════════════════════════════════════════════════
+  # JOB 2: DOCKER — Build images and push to ECR
+  # This runs AFTER terraform so ECR repos already exist
+  # ════════════════════════════════════════════════════════
+  docker:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: terraform    # ← Wait for ECR repos to be created first
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      # Generates a temporary Docker login token for ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      # Build backend image and push to the ECR repo Terraform just created
       - name: Build and push backend Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -43,7 +101,7 @@ jobs:
 
           echo "✅ Backend image pushed: $ECR_REGISTRY/collabsphere-backend:$IMAGE_TAG"
 
- 
+      # Build frontend image and push to the ECR repo Terraform just created
       - name: Build and push frontend Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -58,50 +116,3 @@ jobs:
           docker push $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG
 
           echo "✅ Frontend image pushed: $ECR_REGISTRY/collabsphere-frontend:$IMAGE_TAG"
-
-  terraform:
-    name: Provision AWS Infrastructure (Terraform)
-    runs-on: ubuntu-latest
-    needs: docker           # ← Only runs after Job 1 (docker) succeeds
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }}   # Required for AWS Academy temp credentials
-          aws-region:            ${{ secrets.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.7.0"
-
-      - name: Terraform Init
-        working-directory: terraform   
-        run: |
-          echo "🚀 Initialising Terraform..."
-          terraform init
-
-      - name: Terraform Plan
-        working-directory: terraform
-        run: |
-          echo "📋 Planning infrastructure changes..."
-          terraform plan \
-            -var="aws_region=${{ secrets.AWS_REGION }}" \
-            -var="app_name=collabsphere" \
-            -var="image_tag=latest"
-
-      - name: Terraform Apply
-        working-directory: terraform
-        run: |
-          echo "⚙️  Applying infrastructure changes..."
-          terraform apply -auto-approve \
-            -var="aws_region=${{ secrets.AWS_REGION }}" \
-            -var="app_name=collabsphere" \
-            -var="image_tag=latest"
-
-          echo "✅ Infrastructure is ready!"
