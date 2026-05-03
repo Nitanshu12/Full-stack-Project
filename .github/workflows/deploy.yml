@@ -38,9 +38,6 @@ jobs:
         working-directory: terraform
         run: terraform init
 
-      # TF_VAR_* env vars are the safest way to pass secrets to Terraform.
-      # Using -var="region=${{ secrets.AWS_REGION }}" inside a shell string
-      # causes quoting issues — Terraform receives a malformed/masked value.
       - name: Terraform Plan
         working-directory: terraform
         env:
