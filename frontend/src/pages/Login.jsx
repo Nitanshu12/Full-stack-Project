@@ -1,195 +1,119 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import Logo from '../assets/Logo.png';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import { Sphere, GoogleLogo, ArrowRight } from "@phosphor-icons/react";
 
-const ROLES = [
-    { key: 'STUDENT', label: 'Student' },
-    { key: 'MENTOR', label: 'Mentor' },
-    { key: 'ORGANIZATION', label: 'Organization' }
-];
+// REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+function startGoogleLogin() {
+  const redirectUrl = window.location.origin + "/dashboard";
+  window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+}
 
-const Login = () => {
-    const [data, setData] = useState({
-        email: "",
-        password: ""
-    });
-    const [error, setError] = useState("");
-    const { login, loginWithGoogle, getDashboardPath } = useAuth();
-    const navigate = useNavigate();
+export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
-    };
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const result = await login(email.trim().toLowerCase(), password);
+      // login method from AuthProvider returns { success, message, data, error }
+      if (result && !result.success) {
+        toast.error(result.message || "Login failed");
+      } else {
+        toast.success("Welcome back!");
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.response?.data?.detail || "Login failed");
+    } finally { setLoading(false); }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+  return (
+    <div className="min-h-screen grid md:grid-cols-2">
+      {/* Left — form */}
+      <div className="p-8 md:p-16 flex flex-col justify-center">
+        <Link to="/" className="flex items-center gap-2 mb-12" data-testid="login-logo-link">
+          <div className="w-9 h-9 grid place-items-center bg-[var(--cs-ink)] text-white"><Sphere weight="duotone" size={22} /></div>
+          <span className="font-display text-xl tracking-tighter">CollabSphere</span>
+        </Link>
+        <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">welcome back</div>
+        <h1 className="font-display text-5xl sm:text-6xl tracking-tighter mt-3" data-testid="login-heading">Log in.</h1>
+        <p className="mt-3 text-muted-ink max-w-sm">Pick up where you left off. Your matches got smarter overnight.</p>
 
-        try {
-            const res = await login(data.email, data.password);
-            if (res.success) {
-                const role = res.data?.user?.role || 'STUDENT';
-                navigate(getDashboardPath(role));
-            } else {
-                setError(res.message || "Login failed");
-            }
-        } catch (err) {
-            setError(err.response?.data?.message || "An error occurred");
-        }
-    };
+        <button
+          type="button"
+          onClick={startGoogleLogin}
+          data-testid="login-google-btn"
+          className="mt-10 w-full max-w-md btn-brutal bg-white px-5 py-3.5 font-semibold flex items-center justify-center gap-3"
+        >
+          <GoogleLogo size={20} weight="bold" /> Continue with Google
+        </button>
 
-    const handleGoogleSignIn = async () => {
-        try {
-            setError("");
-            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-            if (!clientId) {
-                setError("Google sign-in is not configured.");
-                return;
-            }
-
-            if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                await new Promise((resolve, reject) => {
-                    const existingScript = document.getElementById('google-identity-script');
-                    if (existingScript) {
-                        existingScript.onload = () => resolve();
-                        existingScript.onerror = () => reject(new Error('Failed to load Google script'));
-                        return;
-                    }
-                    const script = document.createElement('script');
-                    script.src = 'https://accounts.google.com/gsi/client';
-                    script.async = true;
-                    script.defer = true;
-                    script.id = 'google-identity-script';
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error('Failed to load Google script'));
-                    document.body.appendChild(script);
-                });
-            }
-
-            await new Promise((resolve, reject) => {
-                try {
-                    window.google.accounts.id.initialize({
-                        client_id: clientId,
-                        callback: async (response) => {
-                            try {
-                                const idToken = response.credential;
-                                const res = await loginWithGoogle(idToken);
-                                if (res.success) {
-                                    const role = res.data?.user?.role || 'STUDENT';
-                                    navigate(getDashboardPath(role));
-                                } else {
-                                    setError(res.message || "Google login failed");
-                                }
-                            } catch (err) {
-                                setError(err.response?.data?.message || "Google login failed");
-                            } finally {
-                                resolve();
-                            }
-                        }
-                    });
-                    window.google.accounts.id.prompt();
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        } catch (e) {
-            setError("Google sign-in is currently unavailable.");
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-white">
-            {/* Header with Logo */}
-            <header className="px-6 md:px-12 py-6">
-                <div className="flex items-center gap-2">
-                    <img 
-                        src={Logo} 
-                        alt="CollabSphere Logo" 
-                        className="h-10 w-10 object-contain"
-                    />
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900">COLLABSPHERE</h1>
-                        <p className="text-xs text-gray-600">Where Ideas Come To Life</p>
-                    </div>
-                </div>
-            </header>
-
-            <div className="flex items-center justify-center px-4 py-8 md:py-12">
-                <div className="w-full max-w-md">
-                    <div className="bg-gradient-to-b from-purple-800 to-blue-600 rounded-2xl p-8 md:p-10 shadow-2xl">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 text-center uppercase tracking-wide">
-                            WELCOME BACK
-                        </h2>
-
-                        {error && (
-                            <div className="bg-red-500/20 border border-red-300 text-red-100 px-4 py-2 rounded-lg mb-6 text-sm text-center">
-                                {error}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Email Field */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Email:</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={data.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your email"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-white font-medium mb-2">Password:</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your password"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all active:scale-98"
-                            >
-                                Login
-                            </button>
-                        </form>
-
-                        <button
-                            type="button"
-                            onClick={handleGoogleSignIn}
-                            className="w-full mt-4 py-3 bg-white text-gray-900 font-bold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <span>Sign in with Google</span>
-                            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
-                        </button>
-
-                        <div className="mt-6 text-center text-white text-sm">
-                            Don't have any account?{' '}
-                            <Link to="/signup" className="text-blue-200 hover:text-blue-100 font-semibold underline">
-                                Sign up
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="flex items-center gap-4 max-w-md my-6">
+          <div className="h-px bg-[var(--cs-ink)] flex-1" />
+          <span className="font-mono-cs text-[10px] tracking-[0.25em] uppercase text-muted-ink">or email</span>
+          <div className="h-px bg-[var(--cs-ink)] flex-1" />
         </div>
-    );
-};
 
-export default Login;
+        <form onSubmit={onSubmit} className="max-w-md space-y-4">
+          <label className="block">
+            <span className="font-mono-cs text-[10px] tracking-[0.2em] uppercase">Email</span>
+            <input
+              type="email" required value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              data-testid="login-email-input"
+              className="mt-2 w-full px-4 py-3 bg-white border-2 border-[var(--cs-ink)] focus:outline-none focus:shadow-brutal-blue transition-shadow"
+              placeholder="you@college.edu"
+            />
+          </label>
+          <label className="block">
+            <span className="font-mono-cs text-[10px] tracking-[0.2em] uppercase">Password</span>
+            <input
+              type="password" required value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              data-testid="login-password-input"
+              className="mt-2 w-full px-4 py-3 bg-white border-2 border-[var(--cs-ink)] focus:outline-none focus:shadow-brutal-blue transition-shadow"
+              placeholder="••••••••"
+            />
+          </label>
+          <button
+            type="submit" disabled={loading} data-testid="login-submit-btn"
+            className="w-full btn-brutal bg-[var(--cs-ink)] text-white px-5 py-3.5 font-semibold inline-flex items-center justify-center gap-2"
+          >
+            {loading ? "Logging in…" : (<>Log in <ArrowRight size={18} /></>)}
+          </button>
+        </form>
+
+        <div className="mt-6 text-sm">
+          New here? <Link to="/signup" className="font-bold underline underline-offset-4 decoration-[var(--cs-primary)]" data-testid="login-to-register">Create an account</Link>
+        </div>
+      </div>
+
+      {/* Right — visual */}
+      <div className="hidden md:block relative bg-[var(--cs-ink)] text-white overflow-hidden">
+        <div className="absolute inset-0 dot-grid opacity-20" />
+        <div className="absolute top-10 left-10 right-10 font-mono-cs text-[10px] tracking-[0.25em] uppercase text-white/60">Live · ops.collabsphere</div>
+        <div className="relative h-full p-16 flex flex-col justify-end">
+          <div className="font-display text-5xl tracking-tighter leading-[0.95]">
+            "I matched with my co-founder <span className="gradient-text">on day two</span>. Shipped our MVP in three weeks."
+          </div>
+          <div className="mt-6 flex items-center gap-3">
+            <img src="https://i.pravatar.cc/60?img=32" alt="" className="w-10 h-10 border border-white" />
+            <div>
+              <div className="font-bold">Priya M.</div>
+              <div className="text-white/60 text-sm">CS '26 · shipped Lyra</div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-[var(--cs-yellow)] rotate-12" />
+        <div className="absolute top-20 right-16 w-40 h-40 border-2 border-white" />
+      </div>
+    </div>
+  );
+}

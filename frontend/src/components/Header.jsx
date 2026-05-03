@@ -1,146 +1,118 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import useAuth from '../hooks/useAuth';
-import Logo from '../assets/Logo.png';
-import { FiLogOut, FiShield } from 'react-icons/fi';
+import React, { useState, useRef, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { Sphere, SignOut, User } from "@phosphor-icons/react";
 
-const getInitials = (name = '') => {
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
+const links = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/projects", label: "Projects" },
+  { to: "/smart-matches", label: "Teammates" },
+  { to: "/mentors", label: "Mentorship" },
+  { to: "/feed", label: "Feed" },
+];
+
+export default function Header() {
+  const { auth, logout } = useAuth();
+  const user = auth?.user;
+  const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const initials = (user?.name || "U").split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase();
+
+  // Handle click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
     }
-    const first = parts[0]?.[0] || '';
-    const last = parts[parts.length - 1]?.[0] || '';
-    return (first + last).toUpperCase();
-};
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-// Navigation links per role
-const NAV_CONFIG = {
-    STUDENT: [
-        { label: 'Dashboard', path: '/student/dashboard' },
-        { label: 'Projects', path: '/student/discover-projects' },
-        { label: 'Find Teammates', path: '/student/smart-matches' },
-        { label: 'Mentorship', path: '/student/mentors' },
-        { label: 'Feed', path: '/feed' }
-    ],
-    MENTOR: [
-        { label: 'Dashboard', path: '/mentor/dashboard' },
-        { label: 'Feed', path: '/feed' }
-    ],
-    ORGANIZATION: [
-        { label: 'Dashboard', path: '/organization/dashboard' },
-        { label: 'Feed', path: '/feed' }
-    ],
-    ADMIN: [
-        { label: 'Dashboard', path: '/admin/dashboard' },
-        { label: 'Users', path: '/admin/users' },
-        { label: 'Feed', path: '/feed' }
-    ]
-};
+  return (
+    <header className="sticky top-0 z-40 border-b-2 border-[var(--cs-ink)] bg-[var(--cs-bg)]/85 backdrop-blur-md">
+      <div className="px-6 md:px-10 lg:px-16 h-16 flex items-center justify-between">
+        <Link to="/dashboard" className="flex items-center gap-2" data-testid="nav-logo">
+          <div className="w-9 h-9 grid place-items-center bg-[var(--cs-ink)] text-white border border-[var(--cs-ink)]">
+            <Sphere weight="duotone" size={22} />
+          </div>
+          <div className="leading-none">
+            <div className="font-display text-xl tracking-tighter">CollabSphere</div>
+            <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-muted-ink">build · together · faster</div>
+          </div>
+        </Link>
 
-const Header = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { auth, logout, getDashboardPath } = useAuth();
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const logoRef = useRef(null);
+        <nav className="hidden md:flex items-center gap-1">
+          {links.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              data-testid={`nav-link-${l.label.toLowerCase()}`}
+              className={({ isActive }) =>
+                `px-3 py-2 text-sm font-medium tracking-tight ${isActive ? "bg-[var(--cs-ink)] text-white" : "hover:bg-black/5"}`
+              }
+            >
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
 
-    const userRole = auth.user?.role || 'STUDENT';
-    const navLinks = NAV_CONFIG[userRole] || NAV_CONFIG.STUDENT;
-
-    const handleLogout = async () => {
-        setIsProfileMenuOpen(false);
-        await logout();
-        navigate('/login');
-    };
-
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.from(logoRef.current, {
-                opacity: 0,
-                y: -40,
-                duration: 1,
-                ease: 'power3.out',
-            });
-        });
-        return () => ctx.revert();
-    }, []);
-
-    return (
-        <header className="bg-white border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-                <div ref={logoRef} className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(getDashboardPath(userRole))}>
-                    <img 
-                        src={Logo} 
-                        alt="CollabSphere Logo" 
-                        className="object-contain"
-                        style={{ width: '6.25rem', height: '6.25rem' }}
-                    />
-                    <div>
-                        <p className="text-lg font-semibold text-gray-900">CollabSphere</p>
-                        <p className="text-xs text-gray-500">Build together, faster.</p>
-                    </div>
-                </div>
-
-                <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                    {navLinks
-                        .filter((link) => link.path !== location.pathname)
-                        .map((link) => (
-                            <button
-                                key={link.path}
-                                onClick={() => navigate(link.path)}
-                                className="hover:text-purple-600 transition-colors"
-                            >
-                                {link.label}
-                            </button>
-                        ))}
-                    {userRole === 'ADMIN' && (
-                        <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 font-semibold">
-                            <FiShield className="w-3 h-3" /> Admin
-                        </span>
-                    )}
-                </nav>
-
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <button
-                            type="button"
-                            onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                            className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-white text-sm font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white"
-                        >
-                            {getInitials(auth.user?.name || 'User')}
-                        </button>
-                        {isProfileMenuOpen && (
-                            <div className="absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
-                                <div className="px-4 py-2 border-b border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-900">{auth.user?.name}</p>
-                                    <p className="text-xs text-gray-500 capitalize">{userRole.toLowerCase()}</p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setIsProfileMenuOpen(false);
-                                        navigate('/profile');
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                >
-                                    Your Profile
-                                </button>
-                                <div className="border-t border-gray-100 my-1" />
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 inline-flex items-center gap-2"
-                                >
-                                    <FiLogOut className="w-4 h-4" />
-                                    Logout
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+          <button 
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 px-2 py-1.5 border-2 border-[var(--cs-ink)] bg-white hover:shadow-brutal transition-all" 
+            data-testid="nav-profile-btn"
+          >
+            <div className="h-7 w-7 flex items-center justify-center bg-[var(--cs-yellow)] text-[var(--cs-ink)] font-bold text-xs border border-[var(--cs-ink)] overflow-hidden">
+              {user?.picture ? <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" /> : initials}
             </div>
-        </header>
-    );
-};
+            <span className="hidden sm:inline text-sm font-semibold">{(user?.name || "").split(" ")[0] || "You"}</span>
+          </button>
+          
+          {dropdownOpen && (
+            <div className="absolute top-full right-0 mt-2 w-56 bg-white border-2 border-[var(--cs-ink)] shadow-brutal flex flex-col z-50">
+              <div className="px-3 py-2">
+                <div className="font-mono-cs text-[10px] tracking-widest uppercase text-muted-ink">Signed in as</div>
+                <div className="font-semibold text-sm truncate">{user?.email}</div>
+              </div>
+              <div className="h-px bg-[var(--cs-ink)] w-full" />
+              <button 
+                onClick={() => { setDropdownOpen(false); navigate("/profile"); }} 
+                className="flex items-center px-3 py-2 text-sm font-medium hover:bg-black/5 text-left"
+                data-testid="nav-menu-profile"
+              >
+                <User size={16} className="mr-2" /> Edit profile
+              </button>
+              <button
+                onClick={async () => { 
+                  setDropdownOpen(false); 
+                  await logout(); 
+                  navigate("/"); 
+                }}
+                className="flex items-center px-3 py-2 text-sm font-medium hover:bg-black/5 text-left text-red-600"
+                data-testid="nav-menu-logout"
+              >
+                <SignOut size={16} className="mr-2" /> Log out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
-export default Header;
+      {/* Mobile nav */}
+      <nav className="md:hidden border-t border-[var(--cs-ink)] px-4 py-2 flex gap-1 overflow-x-auto">
+        {links.map((l) => (
+          <NavLink
+            key={l.to}
+            to={l.to}
+            className={({ isActive }) => `px-3 py-1.5 text-xs whitespace-nowrap ${isActive ? "bg-[var(--cs-ink)] text-white" : ""}`}
+          >
+            {l.label}
+          </NavLink>
+        ))}
+      </nav>
+    </header>
+  );
+}

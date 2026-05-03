@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import api from '../api/axios.js';
 import Header from '../components/Header';
-import { FiSearch, FiFilter, FiPlus, FiCalendar, FiMapPin } from 'react-icons/fi';
+import { MagnifyingGlass, Funnel, Plus, CalendarBlank, MapPin, Users, ArrowRight } from '@phosphor-icons/react';
 
 const DiscoverProjects = () => {
     const navigate = useNavigate();
@@ -16,11 +16,6 @@ const DiscoverProjects = () => {
     const [locationFilter, setLocationFilter] = useState('');
     const [remoteOnly, setRemoteOnly] = useState(false);
     const [sortBy, setSortBy] = useState('newest'); 
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
 
     useEffect(() => {
         fetchProjects();
@@ -48,7 +43,6 @@ const DiscoverProjects = () => {
             if (response.data.success) {
                 let fetched = response.data.data.projects || [];
 
-           
                 if (sortBy === 'newest') {
                     fetched = [...fetched].sort(
                         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -83,112 +77,109 @@ const DiscoverProjects = () => {
         const diffTime = Math.abs(now - date);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays === 1) return '1 day ago';
-        if (diffDays < 7) return `${diffDays} days ago`;
-        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-        if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-        return `${Math.floor(diffDays / 365)} years ago`;
+        if (diffDays === 1) return '1 d';
+        if (diffDays < 7) return `${diffDays} d`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} w`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} mo`;
+        return `${Math.floor(diffDays / 365)} y`;
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen">
             <Header />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-                    <div className="mb-4 sm:mb-0">
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+            <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16 py-10">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8 gap-4">
+                    <div>
+                        <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">§ explore</div>
+                        <h1 className="font-display text-4xl md:text-5xl tracking-tighter mt-1 text-[var(--cs-ink)]">
                             Discover Projects
                         </h1>
-                        <p className="text-lg text-gray-600">
-                            Find exciting projects to collaborate on
+                        <p className="text-muted-ink mt-2">
+                            Find exciting projects to collaborate on.
                         </p>
                     </div>
                     <button
                         onClick={() => navigate('/create-project')}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
+                        className="btn-brutal bg-[var(--cs-primary)] text-white px-5 py-3 font-semibold inline-flex items-center gap-2"
                     >
-                        <FiPlus className="w-5 h-5" />
-                        Create Project
+                        <Plus weight="bold" size={16} /> Create Project
                     </button>
                 </div>
 
-                <div className="mb-6 space-y-4">
+                <div className="mb-8 space-y-4">
                     <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <FiSearch className="w-5 h-5 text-gray-400" />
+                                <MagnifyingGlass className="w-5 h-5 text-muted-ink" />
                             </div>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search projects by title, tags, or skills..."
-                                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                                className="w-full pl-12 pr-4 py-4 border-2 border-[var(--cs-ink)] bg-white focus:outline-none placeholder-muted-ink"
                             />
                         </div>
                         <div className="flex gap-3">
                             <button
                                 type="submit"
-                                className="inline-flex flex-1 md:flex-none items-center justify-center px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition"
+                                className="inline-flex flex-1 md:flex-none items-center justify-center px-6 py-4 btn-brutal bg-[var(--cs-ink)] text-white font-semibold"
                             >
                                 Search
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="inline-flex items-center gap-2 px-4 py-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
+                                className={`inline-flex items-center gap-2 px-6 py-4 border-2 border-[var(--cs-ink)] font-semibold shadow-brutal transition-colors ${showFilters ? 'bg-[var(--cs-yellow)]' : 'bg-white hover:bg-[var(--cs-yellow)]'}`}
                             >
-                                <FiFilter className="w-5 h-5" />
-                                Filters
+                                <Funnel weight="bold" className="w-5 h-5" /> Filters
                             </button>
                         </div>
                     </form>
 
                     {showFilters && (
-                        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-5 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white border-2 border-[var(--cs-ink)] shadow-brutal p-5 md:p-6 space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                 {/* Tag / Skill filter */}
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-mono-cs text-[10px] tracking-[0.2em] uppercase text-[var(--cs-ink)]">
                                         Skill / Tag
                                     </label>
                                     <input
                                         type="text"
                                         value={tagFilter}
                                         onChange={(e) => setTagFilter(e.target.value)}
-                                        placeholder="e.g. React, AI, Backend"
-                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="e.g. React, AI"
+                                        className="px-4 py-3 border-2 border-[var(--cs-ink)] focus:outline-none"
                                     />
                                 </div>
 
-                            
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-mono-cs text-[10px] tracking-[0.2em] uppercase text-[var(--cs-ink)]">
                                         Location
                                     </label>
                                     <input
                                         type="text"
                                         value={locationFilter}
                                         onChange={(e) => setLocationFilter(e.target.value)}
-                                        placeholder="City, country, or remote"
-                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="City or country"
+                                        className="px-4 py-3 border-2 border-[var(--cs-ink)] focus:outline-none"
                                     />
                                 </div>
 
                                 {/* Sort select */}
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                <div className="flex flex-col gap-2">
+                                    <label className="font-mono-cs text-[10px] tracking-[0.2em] uppercase text-[var(--cs-ink)]">
                                         Sort by
                                     </label>
                                     <select
                                         value={sortBy}
                                         onChange={(e) => {
                                             setSortBy(e.target.value);
-                                            // Re-apply sorting on current results
                                             fetchProjects();
                                         }}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        className="px-4 py-3 border-2 border-[var(--cs-ink)] bg-white focus:outline-none"
                                     >
                                         <option value="newest">Newest first</option>
                                         <option value="oldest">Oldest first</option>
@@ -197,15 +188,15 @@ const DiscoverProjects = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-1">
-                                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
+                                <label className="inline-flex items-center gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={remoteOnly}
                                         onChange={(e) => setRemoteOnly(e.target.checked)}
-                                        className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                        className="w-5 h-5 border-2 border-[var(--cs-ink)] rounded-none text-[var(--cs-primary)] focus:ring-0 focus:ring-offset-0 bg-white"
                                     />
-                                    <span>Show only remote-friendly projects</span>
+                                    <span className="font-semibold text-sm">Show only remote-friendly projects</span>
                                 </label>
 
                                 <div className="flex gap-3">
@@ -216,30 +207,18 @@ const DiscoverProjects = () => {
                                             setLocationFilter('');
                                             setRemoteOnly(false);
                                             setSortBy('newest');
-                                            fetchProjects({
-                                                search: searchQuery,
-                                                tag: '',
-                                                location: '',
-                                                isRemote: false
-                                            });
+                                            fetchProjects({ search: searchQuery, tag: '', location: '', isRemote: false });
                                         }}
-                                        className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                                        className="px-5 py-2 font-semibold border-2 border-[var(--cs-ink)] bg-white hover:bg-gray-50"
                                     >
-                                        Clear filters
+                                        Clear
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            fetchProjects({
-                                                search: searchQuery,
-                                                tag: tagFilter,
-                                                location: locationFilter,
-                                                isRemote: remoteOnly
-                                            })
-                                        }
-                                        className="px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm hover:shadow-md transition"
+                                        onClick={() => fetchProjects({ search: searchQuery, tag: tagFilter, location: locationFilter, isRemote: remoteOnly })}
+                                        className="px-5 py-2 font-semibold btn-brutal bg-[var(--cs-primary)] text-white"
                                     >
-                                        Apply filters
+                                        Apply
                                     </button>
                                 </div>
                             </div>
@@ -249,75 +228,88 @@ const DiscoverProjects = () => {
 
                 {/* Projects Grid */}
                 {loading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <div className="text-gray-500">Loading projects...</div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {Array.from({length:6}).map((_,i) => <div key={i} className="h-64 border-2 border-[var(--cs-ink)] bg-white animate-pulse" />)}
                     </div>
                 ) : projects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <p className="text-gray-500 text-lg mb-2">No projects found</p>
-                        <p className="text-gray-400 text-sm">Try adjusting your search or filters</p>
+                    <div className="border-2 border-[var(--cs-ink)] bg-white p-12 text-center shadow-brutal">
+                        <div className="font-display text-3xl mb-2">No projects found.</div>
+                        <p className="text-muted-ink">Try adjusting your search or filters, or be the first to start something new.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {projects.map((project) => (
-                            <div
-                                key={project._id}
-                                className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                            <div 
+                                key={project._id} 
+                                className="border-2 border-[var(--cs-ink)] bg-white p-6 shadow-brutal hover:shadow-brutal-lg transition-shadow flex flex-col cursor-pointer group" 
+                                data-testid={`project-card-${project._id}`}
                                 onClick={() => {
-                                    
+                                    // Could navigate to details here if needed
                                     console.log('Project clicked:', project._id);
                                 }}
                             >
-                            
-                                {project.tags && project.tags.length > 0 && (
-                                    <div className="mb-3">
-                                        <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
-                                            {project.tags[0].toLowerCase()}
-                                        </span>
+                                <div className="flex items-start justify-between">
+                                    <div className="w-12 h-12 grid place-items-center border border-[var(--cs-ink)] bg-[var(--cs-yellow)] text-2xl group-hover:scale-105 transition-transform">
+                                        {"🚀"}
                                     </div>
-                                )}
+                                    <div className="text-right">
+                                        <span className="font-mono-cs text-[10px] tracking-widest uppercase bg-[var(--cs-primary)] text-white px-2 py-0.5 block">
+                                            {project.status || "Idea"}
+                                        </span>
+                                        <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-muted-ink mt-2">
+                                            <Users size={12} weight="fill" className="inline mr-1 -mt-0.5" /> {(project.members || []).length + 1}
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {/* Project Title */}
-                                <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
-                                    {project.title}
-                                </h3>
+                                <div className="mt-4">
+                                    <h3 className="font-display text-xl tracking-tight leading-tight line-clamp-2">
+                                        {project.title}
+                                    </h3>
+                                    <p className="mt-2 text-sm text-muted-ink line-clamp-3">
+                                        {project.description}
+                                    </p>
+                                </div>
 
-                                {/* Description Preview */}
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                                    {project.description}
-                                </p>
+                                <div className="mt-4 flex flex-wrap gap-1.5">
+                                    {(project.tags || []).slice(0, 3).map(t => (
+                                        <span key={t} className="border border-[var(--cs-ink)] px-2 py-0.5 text-[10px] font-semibold bg-white text-[var(--cs-ink)]">
+                                            {t}
+                                        </span>
+                                    ))}
+                                    {project.tags && project.tags.length > 3 && (
+                                        <span className="border border-[var(--cs-ink)] px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-[var(--cs-ink)]">
+                                            +{project.tags.length - 3}
+                                        </span>
+                                    )}
+                                </div>
 
-                                {/* Looking For */}
                                 {project.lookingFor && project.lookingFor.length > 0 && (
-                                    <div className="mb-4">
-                                        <p className="text-sm font-medium text-gray-700 mb-2">Looking for:</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {project.lookingFor.slice(0, 3).map((role, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-block px-2 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded"
-                                                >
+                                    <div className="mt-4 pt-4 border-t-2 border-dotted border-[var(--cs-ink)]/20">
+                                        <div className="font-mono-cs text-[10px] tracking-widest uppercase text-[var(--cs-ink)] mb-2">Looking for:</div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {project.lookingFor.slice(0, 2).map((role, index) => (
+                                                <span key={index} className="px-2 py-0.5 bg-[var(--cs-ink)] text-white text-[10px] font-semibold">
                                                     {role}
                                                 </span>
                                             ))}
-                                            {project.lookingFor.length > 3 && (
-                                                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded">
-                                                    +{project.lookingFor.length - 3} more
+                                            {project.lookingFor.length > 2 && (
+                                                <span className="px-2 py-0.5 border border-[var(--cs-ink)] text-[10px] font-semibold">
+                                                    +{project.lookingFor.length - 2}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                 )}
 
-                         
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                    <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                        <FiCalendar className="w-4 h-4" />
+                                <div className="mt-auto pt-5 flex items-center justify-between text-xs font-semibold text-muted-ink">
+                                    <div className="flex items-center gap-1.5">
+                                        <CalendarBlank size={14} weight="bold" />
                                         <span>{formatDate(project.createdAt)}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-gray-500 text-sm">
-                                        <FiMapPin className="w-4 h-4" />
-                                        <span className="lowercase">
+                                    <div className="flex items-center gap-1.5">
+                                        <MapPin size={14} weight="bold" />
+                                        <span className="truncate max-w-[100px]">
                                             {project.isRemote ? 'Remote' : project.location || 'Not specified'}
                                         </span>
                                     </div>

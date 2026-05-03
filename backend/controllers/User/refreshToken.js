@@ -21,8 +21,7 @@ async function refreshTokenController(req, res) {
 
                 const hackedUser = await userModel.findOne({ _id: decoded._id }).exec();
                 if (hackedUser) {
-                    hackedUser.refreshToken = [];
-                    await hackedUser.save();
+                    await userModel.updateOne({ _id: hackedUser._id }, { $set: { refreshToken: [] } });
                 }
             });
             return res.sendStatus(403);
@@ -32,8 +31,7 @@ async function refreshTokenController(req, res) {
 
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.TOKEN_SECRET_KEY, async (err, decoded) => {
             if (err) {
-                foundUser.refreshToken = [...newRefreshTokenArray];
-                await foundUser.save();
+                await userModel.updateOne({ _id: foundUser._id }, { $set: { refreshToken: [...newRefreshTokenArray] } });
             }
             if (err || foundUser._id.toString() !== decoded._id) return res.sendStatus(403);
 
@@ -49,8 +47,10 @@ async function refreshTokenController(req, res) {
                 { expiresIn: '7d' }
             );
 
-            foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-            await foundUser.save();
+            await userModel.updateOne(
+                { _id: foundUser._id },
+                { $set: { refreshToken: [...newRefreshTokenArray, newRefreshToken] } }
+            );
 
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,

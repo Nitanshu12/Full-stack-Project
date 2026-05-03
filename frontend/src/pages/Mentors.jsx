@@ -1,76 +1,81 @@
-import Header from '../components/Header';
+import React, { useEffect, useState } from "react";
+import { axiosPrivate } from "../api/axios";
+import Header from "../components/Header";
+import { toast } from "sonner";
+import { Star, ChatCircle } from "@phosphor-icons/react";
 
-const Mentors = () => {
-    return (
-        <div className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-50">
-            <Header />
+export default function Mentors() {
+  const [mentors, setMentors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-            
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16">
-                <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12 flex flex-col md:flex-row gap-10 items-center">
-                    <div className="flex-1 space-y-5">
-                        <p className="inline-flex items-center rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 uppercase tracking-wide">
-                            Coming soon
-                        </p>
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                            Mentor network is on the way
-                        </h1>
-                        <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-                            Soon you&apos;ll be able to connect with industry experts and senior students
-                            who can review your projects, unblock you faster, and guide your capstone
-                            journey.
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <div className="rounded-2xl border border-purple-100 bg-purple-50/60 px-4 py-3">
-                                <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide mb-1">
-                                    1:1 sessions
-                                </p>
-                                <p className="text-sm text-gray-700">
-                                    Book focused mentorship slots for code reviews and project feedback.
-                                </p>
-                            </div>
-                            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3">
-                                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">
-                                    Expert pools
-                                </p>
-                                <p className="text-sm text-gray-700">
-                                    Browse mentors by domain—AI, web, mobile, design, and more.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const response = await axiosPrivate.get('/all-user');
+        if (response.data?.success) {
+          const allUsers = response.data.data || [];
+          const mentorsOnly = allUsers.filter(u => String(u.role).toUpperCase() === 'MENTOR');
+          setMentors(mentorsOnly);
+        }
+      } catch (error) {
+        console.error("Failed to load mentors:", error);
+        toast.error("Failed to load mentors");
+      } finally { 
+        setLoading(false); 
+      }
+    })();
+  }, []);
 
-                    <div className="flex-1 max-w-sm w-full">
-                        <div className="relative rounded-3xl bg-gradient-to-br from-purple-600 to-blue-500 text-white px-6 py-8 shadow-xl overflow-hidden">
-                            <div className="absolute -right-10 -top-10 w-40 h-40 bg-purple-400/30 rounded-full blur-3xl" />
-                            <div className="absolute -left-8 bottom-0 w-32 h-32 bg-blue-400/30 rounded-full blur-3xl" />
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main className="px-6 md:px-10 lg:px-16 py-10 space-y-8">
+        <section>
+          <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">§ mentorship</div>
+          <h1 className="font-display text-5xl sm:text-6xl tracking-tighter mt-2" data-testid="mentorship-heading">Stand on shoulders.</h1>
+          <p className="mt-3 text-muted-ink max-w-lg">Curated mentors — ex-Google, ex-Stripe, published researchers. Most offer a free first call.</p>
+        </section>
 
-                            <div className="relative space-y-4">
-                                <p className="text-sm font-medium text-white/80">
-                                    Be the first to know
-                                </p>
-                                <h2 className="text-2xl font-semibold">
-                                    Mentors will be available soon on CollabSphere
-                                </h2>
-                                <p className="text-sm text-white/80">
-                                    We&apos;re onboarding mentors right now. Keep collaborating on projects
-                                    and checking back here.
-                                </p>
-                                <button
-                                    onClick={() => navigate('/dashboard')}
-                                    className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-purple-700 shadow-sm hover:bg-white transition"
-                                >
-                                    Back to Dashboard
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    );
-};
-
-export default Mentors;
+        <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {loading ? Array.from({length:3}).map((_,i) => <div key={i} className="h-64 border-2 border-[var(--cs-ink)] bg-white animate-pulse" />) :
+            mentors.map((m) => (
+              <div key={m._id} className="border-2 border-[var(--cs-ink)] bg-white p-6 shadow-brutal relative overflow-hidden" data-testid={`mentor-${m._id}`}>
+                <div className="absolute -top-8 -right-8 w-28 h-28 bg-[var(--cs-pink)] border-2 border-[var(--cs-ink)] rotate-12" />
+                <div className="relative flex items-start gap-4">
+                  <img src={m.picture || `https://i.pravatar.cc/100?u=${m._id}`} alt={m.name} className="w-16 h-16 border-2 border-[var(--cs-ink)] bg-gray-100" />
+                  <div>
+                    <div className="font-display text-xl tracking-tight">{m.name}</div>
+                    <div className="text-xs text-muted-ink">{m.rate || "Free for students"}</div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-ink mt-4 line-clamp-2">{m.bio || "Happy to help you with your capstone journey!"}</p>
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {(m.expertise || m.skills || []).slice(0, 4).map(e => (
+                    <span key={e} className="border border-[var(--cs-ink)] px-2 py-0.5 text-[11px] font-semibold bg-[var(--cs-yellow)]">{e}</span>
+                  ))}
+                </div>
+                <div className="mt-5 flex items-center gap-2">
+                  <div className="flex items-center gap-0.5 text-[var(--cs-orange)]">
+                    {Array.from({length:5}).map((_,i) => <Star key={i} weight="fill" size={14} />)}
+                  </div>
+                  <span className="text-xs text-muted-ink">4.9 · 127 sessions</span>
+                </div>
+                <button onClick={() => toast.success(`Request sent to ${m.name}`)} className="mt-5 w-full btn-brutal bg-[var(--cs-ink)] text-white px-4 py-2.5 text-sm font-semibold inline-flex items-center justify-center gap-2 cursor-pointer" data-testid={`mentor-book-${m._id}`}>
+                  <ChatCircle size={16} weight="fill" /> Request session
+                </button>
+              </div>
+            ))
+          }
+          {!loading && mentors.length === 0 && (
+            <div className="sm:col-span-2 lg:col-span-3 border-2 border-[var(--cs-ink)] bg-white p-10 text-center">
+              <div className="font-display text-2xl">No mentors available right now.</div>
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}
 
 

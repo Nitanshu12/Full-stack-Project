@@ -1,274 +1,220 @@
-import { useState, useEffect } from 'react';
-import useAuth from '../hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { axiosPrivate } from '../api/axios';
-import Header from '../components/Header';
-import {
-    FiPlusSquare,
-    FiUsers,
-    FiSearch,
-    FiUserCheck,
-    FiFolder,
-    FiMessageSquare,
-    FiTrendingUp,
-    FiLink,
-    FiActivity
-} from 'react-icons/fi';
+import React, { useEffect, useState } from "react";
+import { axiosPrivate } from "../api/axios";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import useAuth from "../hooks/useAuth";
+import Header from "../components/Header";
+import { Plus, MagnifyingGlass, GraduationCap, Folder, FolderOpen, ChatCircle, LinkSimple, FileText, Sparkle, ArrowRight, TrendUp, Lightning } from "@phosphor-icons/react";
 
-const actionCards = [
-    {
-        title: 'Create Project',
-        icon: FiPlusSquare,
-        highlight: true,
-        description: 'Start something new today'
-    },
-    {
-        title: 'Find Teammates',
-        icon: FiSearch,
-        description: 'Discover matching collaborators',
-        navigate: '/smart-matches'
-    },
-    {
-        title: 'Find Mentor',
-        icon: FiUserCheck,
-        description: 'Get expert guidance'
-    },
-    {
-        title: 'Browse Projects',
-        icon: FiFolder,
-        description: 'See what others are building',
-        navigate: '/discover-projects'
-    }
+const API = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"}/api`;
+
+const SpotlightCard = ({ children, className, onClick, ...props }) => (
+  <div className={className} onClick={onClick} {...props}>
+    {children}
+  </div>
+);
+
+const quickActions = [
+  { to: "/create-project", label: "Create Project", sub: "Start something new today", icon: Plus, accent: "var(--cs-primary)" },
+  { to: "/smart-matches", label: "Find Teammates", sub: "Discover matching collaborators", icon: MagnifyingGlass, accent: "var(--cs-orange)" },
+  { to: "/mentorship", label: "Find Mentor", sub: "Get expert guidance", icon: GraduationCap, accent: "var(--cs-pink)" },
+  { to: "/projects", label: "Browse Projects", sub: "See what others are building", icon: FolderOpen, accent: "var(--cs-ink)" },
 ];
 
-const getStatCards = (activeProjectsCount, connectionsCount) => [
-    {
-        label: 'Active Projects',
-        value: activeProjectsCount,
-        icon: FiFolder,
-        color: 'text-purple-600'
-    },
-    {
-        label: 'Connections',
-        value: connectionsCount,
-        icon: FiUsers,
-        color: 'text-sky-500'
-    },
-    {
-        label: 'Messages',
-        value: 0,
-        icon: FiMessageSquare,
-        color: 'text-purple-500'
-    },
-    {
-        label: 'Posts',
-        value: 0,
-        icon: FiTrendingUp,
-        color: 'text-sky-400'
-    }
-];
+export default function Dashboard() {
+  const { auth } = useAuth();
+  const user = auth?.user;
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({ active_projects: 0, connections: 0, messages: 0, posts: 0 });
+  const [rec, setRec] = useState({ projects: [], reasoning: "", powered_by: "" });
+  const [loading, setLoading] = useState(true);
 
-const recentActivity = [
-    {
-        title: 'New collaboration request',
-        time: '2 hours ago'
-    },
-    {
-        title: '5 new teammate matches',
-        time: '5 hours ago'
-    },
-    {
-        title: 'Mentor replied to your query',
-        time: '1 day ago'
-    }
-];
+  useEffect(() => {
+    (async () => {
+      try {
+        const [s, r] = await Promise.all([
+          axiosPrivate.get(`/project/stats`),
+          axiosPrivate.get(`/student/recommended-projects`),
+        ]);
+        setStats({
+          active_projects: s.data?.data?.activeProjects || 0,
+          connections: s.data?.data?.connections || 0,
+          messages: 0,
+          posts: 0
+        });
+        const projectsData = r.data?.data || r.data || [];
+        setRec({
+          projects: Array.isArray(projectsData) ? projectsData : (projectsData.projects || []),
+          reasoning: projectsData.reasoning || "",
+          powered_by: projectsData.powered_by || ""
+        });
+      } catch (e) { /* ignore */ }
+      finally { setLoading(false); }
+    })();
+  }, []);
 
-const quickLinks = [
-    'View Collaboration Requests',
-    'Community Feed',
-    'Edit Profile',
-    'Resource Library'
-];
+  const firstName = (user?.name || "You").split(" ")[0];
+  const needsProfile = !(user?.skills?.length) && !(user?.interests?.length);
 
-const Dashboard = () => {
-    const { auth } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [activeProjectsCount, setActiveProjectsCount] = useState(0);
-    const [connectionsCount, setConnectionsCount] = useState(0);
-    const [loading, setLoading] = useState(true);
+  return (
+    <div className="min-h-screen bg-[var(--cs-bg)]">
+      <Header />
 
-    // Fetch project stats
-    const fetchProjectStats = async () => {
-        try {
-            const response = await axiosPrivate.get('/project/stats');
-            if (response.data.success) {
-                setActiveProjectsCount(response.data.data.activeProjects || 0);
-            }
-        } catch (err) {
-            console.error('Error fetching project stats:', err);
-        }
-    };
+      <main className="px-6 md:px-10 lg:px-16 py-10 space-y-10">
+        {/* Welcome hero */}
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="relative border-2 border-[var(--cs-ink)] bg-white p-8 md:p-12 overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-64 h-64 bg-[var(--cs-yellow)] rotate-12 z-0" />
+            <div className="absolute -bottom-12 right-32 w-28 h-28 border-2 border-[var(--cs-ink)] bg-[var(--cs-primary)] z-0" />
+            <div className="relative z-10">
+              <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">dashboard · {new Date().toLocaleDateString("en", { weekday: "long" })}</div>
+              <h1 className="font-display text-5xl sm:text-7xl tracking-tighter mt-3" data-testid="dashboard-welcome">
+                Welcome back, <span className="italic">{firstName}.</span>
+              </h1>
+              <p className="mt-4 text-muted-ink max-w-xl">Here's what's happening inside your sphere today.</p>
 
-    const fetchConnectionsCount = async () => {
-        try {
-            const res = await axiosPrivate.get('/connections/my');
-            if (res.data?.success) {
-                setConnectionsCount((res.data.data || []).length);
-            }
-        } catch (err) {
-            console.error('Error fetching connections:', err);
-        }
-    };
+              {needsProfile && (
+                <div className="mt-6 inline-flex items-center gap-3 border-2 border-[var(--cs-ink)] bg-[var(--cs-yellow)] px-4 py-2 shadow-brutal">
+                  <Lightning size={18} weight="fill" />
+                  <span className="text-sm font-semibold">Add skills & interests to unlock AI-powered project matches →</span>
+                  <Link to="/profile" className="font-mono-cs text-[10px] tracking-widest uppercase underline underline-offset-2" data-testid="dashboard-profile-cta">Complete profile</Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.section>
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            await Promise.all([fetchProjectStats(), fetchConnectionsCount()]);
-            setLoading(false);
-        };
-        load();
-    }, []);
+        {/* Stats cards */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-2 border-[var(--cs-ink)] bg-white">
+          {[
+            { label: "Active Projects", value: stats.active_projects, icon: Folder, accent: "var(--cs-primary)" },
+            { label: "Connections", value: stats.connections, icon: LinkSimple, accent: "var(--cs-orange)" },
+            { label: "Messages", value: stats.messages, icon: ChatCircle, accent: "var(--cs-pink)" },
+            { label: "Posts", value: stats.posts, icon: FileText, accent: "var(--cs-ink)" },
+          ].map((s, i) => (
+            <div
+              key={s.label}
+              data-testid={`stat-${s.label.toLowerCase().replace(" ", "-")}`}
+              className={`p-6 md:p-8 ${i < 3 ? "md:border-r-2 border-[var(--cs-ink)]" : ""} ${i < 2 ? "border-b-2 lg:border-b-0" : ""} ${i === 0 || i === 2 ? "border-r-2" : ""} relative`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-muted-ink">{s.label}</div>
+                <TrendUp size={14} className="text-[var(--cs-primary)]" />
+              </div>
+              <div className="mt-4 flex items-end gap-3">
+                <div className="font-display text-6xl tracking-tighter leading-none">{s.value}</div>
+                <div className="mb-1 w-10 h-10 grid place-items-center border border-[var(--cs-ink)]" style={{ background: s.accent, color: s.accent === "var(--cs-ink)" ? "white" : "black" }}>
+                  <s.icon size={20} weight="duotone" />
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-muted-ink">No updates yet</div>
+            </div>
+          ))}
+        </section>
 
-    // Refresh stats when returning from create project page
-    useEffect(() => {
-        if (location.state?.projectCreated) {
-            fetchProjectStats();
-            fetchConnectionsCount();
-            // Clear the state to prevent unnecessary refetches
-            window.history.replaceState({}, document.title);
-        }
-    }, [location.state]);
+        {/* Quick actions */}
+        <section>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">§ quick actions</div>
+              <h2 className="font-display text-3xl sm:text-4xl tracking-tighter mt-1">Move fast today.</h2>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActions.map((a, i) => (
+              <SpotlightCard
+                key={i}
+                accent={a.accent}
+                onClick={() => navigate(a.to)}
+                role="button"
+                data-testid={`quick-action-${a.label.toLowerCase().replace(/ /g, "-")}`}
+                className="cursor-pointer border-2 border-[var(--cs-ink)] bg-white p-6 shadow-brutal hover:shadow-brutal-lg transition-shadow"
+              >
+                <div className="w-12 h-12 grid place-items-center border border-[var(--cs-ink)]" style={{ background: a.accent, color: a.accent === "var(--cs-ink)" ? "white" : "black" }}>
+                  <a.icon size={24} weight="duotone" />
+                </div>
+                <div className="mt-5 font-display text-xl tracking-tight">{a.label}</div>
+                <div className="mt-1 text-sm text-muted-ink">{a.sub}</div>
+                <div className="mt-4 font-mono-cs text-[10px] tracking-[0.22em] uppercase inline-flex items-center gap-1 text-[var(--cs-primary)]">
+                  Go <ArrowRight size={12} />
+                </div>
+              </SpotlightCard>
+            ))}
+          </div>
+        </section>
 
-    const statCards = getStatCards(activeProjectsCount, connectionsCount);
+        {/* Recommended Projects (AI) */}
+        <section>
+          <div className="flex flex-wrap items-end justify-between mb-6 gap-3">
+            <div>
+              <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase inline-flex items-center gap-2">
+                <Sparkle size={12} weight="fill" className="text-[var(--cs-primary)]" />
+                <span className="gradient-text font-bold">AI-POWERED</span>
+                <span className="text-muted-ink">· groq llama 3.3</span>
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl tracking-tighter mt-1" data-testid="recommended-heading">Recommended projects for you.</h2>
+              {rec.reasoning && <p className="text-muted-ink text-sm mt-2 max-w-2xl">"{rec.reasoning}"</p>}
+            </div>
+            <Link to="/projects" className="btn-brutal bg-white px-4 py-2 text-sm font-semibold inline-flex items-center gap-2" data-testid="recommended-see-all">
+              Browse all <ArrowRight size={14} />
+            </Link>
+          </div>
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
-
-            {/* Main Content */}
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-                {/* Welcome Block */}
-                <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <p className="text-2xl md:text-3xl font-semibold text-gray-900">
-                                Welcome back, {auth.user?.name || 'creator'} <span className="inline-block">👋</span>
-                            </p>
-                            <p className="text-gray-500 mt-1">
-                                Here&apos;s what&apos;s happening with your collaborations
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                            {actionCards.map((card) => (
-                                <button
-                                    key={card.title}
-                                    onClick={() => {
-                                        if (card.navigate) {
-                                            navigate(card.navigate);
-                                        } else if (card.title === 'Create Project') {
-                                            navigate('/create-project');
-                                        }
-                                    }}
-                                    className={`flex flex-col items-start gap-3 rounded-2xl border p-4 text-left transition-all cursor-pointer ${
-                                        card.highlight
-                                            ? 'bg-gradient-to-r from-purple-600 to-blue-500 text-white border-transparent shadow-lg shadow-purple-200/60 pointer-cursor'
-                                            : 'bg-white border-gray-200 text-gray-900 hover:border-purple-400 pointer-cursor'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`rounded-full p-2 ${
-                                                card.highlight
-                                                    ? 'bg-white/20 text-white'
-                                                    : 'bg-purple-50 text-purple-600'
-                                            }`}
-                                        >
-                                            <card.icon className="w-5 h-5" />
-                                        </div>
-                                        <p className={`font-semibold ${card.highlight ? 'text-white' : 'text-gray-900'}`}>
-                                            {card.title}
-                                        </p>
-                                    </div>
-                                    <p
-                                        className={`text-sm ${
-                                            card.highlight ? 'text-white/80' : 'text-gray-500'
-                                        }`}
-                                    >
-                                        {card.description}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* Stats */}
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {statCards.map((stat) => (
-                        <div
-                            key={stat.label}
-                            className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3"
-                        >
-                            <div className="flex items-center justify-between text-sm text-gray-500">
-                                <span>{stat.label}</span>
-                                <span className="text-gray-400">
-                                    <FiTrendingUp />
-                                </span>
-                            </div>
-                            <div className="flex items-end gap-2">
-                                <p className="text-3xl font-semibold text-gray-900">{stat.value}</p>
-                                <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                            </div>
-                            <p className="text-xs text-gray-400">No updates yet</p>
-                        </div>
+          {loading ? (
+            <div className="grid lg:grid-cols-3 gap-4">
+              {[0,1,2].map(i => <div key={i} className="h-64 border-2 border-[var(--cs-ink)] bg-white animate-pulse" />)}
+            </div>
+          ) : rec.projects.length === 0 ? (
+            <div className="border-2 border-[var(--cs-ink)] bg-white p-10 text-center">
+              <div className="font-display text-2xl tracking-tight">No matches yet</div>
+              <p className="text-muted-ink mt-2">Add skills and interests on your profile, or create the first project.</p>
+              <Link to="/profile" className="mt-4 inline-block btn-brutal bg-[var(--cs-ink)] text-white px-4 py-2 text-sm font-semibold">Complete profile</Link>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-4">
+              {rec.projects.slice(0, 3).map((p, i) => (
+                <motion.div
+                  key={p.project_id || p._id}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.5 }}
+                  className="ai-card border-2 border-[var(--cs-ink)] bg-white p-6 flex flex-col"
+                  data-testid={`recommended-card-${i}`}
+                >
+                  <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)] inline-flex items-center gap-1">
+                    <Sparkle size={10} weight="fill" /> match #{i + 1}
+                  </div>
+                  <div className="font-display text-2xl tracking-tight mt-3 leading-tight">{p.title}</div>
+                  <p className="text-sm text-muted-ink mt-2 line-clamp-3">{p.description}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {(p.tags || []).slice(0, 4).map((t, idx) => (
+                      <span key={idx} className="border border-[var(--cs-ink)] px-2 py-0.5 text-[11px] font-semibold bg-[var(--cs-yellow)]">{t}</span>
                     ))}
-                </section>
-
-                {/* Activity + Quick Links */}
-                <section className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <p className="text-lg font-semibold text-gray-900">Recent Activity</p>
-                            <button className="text-sm font-medium text-purple-600 hover:text-purple-700">
-                                View all
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            {recentActivity.map((activity) => (
-                                <div key={activity.title} className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
-                                        <FiActivity className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">{activity.title}</p>
-                                        <p className="text-sm text-gray-500">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                  </div>
+                  <div className="mt-auto pt-5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <img src={p.owner_picture || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + (p.createdBy?.name || p.owner_name || "User")} alt="" className="w-7 h-7 border border-[var(--cs-ink)] bg-white rounded-full" />
+                      <div className="text-xs">
+                        <div className="font-bold leading-none">{p.createdBy?.name || p.owner_name || "Unknown"}</div>
+                        <div className="text-muted-ink mt-0.5">owner</div>
+                      </div>
                     </div>
-
-                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-                        <p className="text-lg font-semibold text-gray-900 mb-4">Quick Links</p>
-                        <div className="space-y-4">
-                            {quickLinks.map((link) => (
-                                <button
-                                    key={link}
-                                    className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-purple-600"
-                                >
-                                    {link}
-                                    <FiLink className="w-4 h-4" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    );
-};
-
-export default Dashboard;
-
+                    <button
+                      onClick={async () => {
+                        try { await axiosPrivate.post(`/projects/${p._id || p.project_id}/join`); navigate("/projects"); } catch { /* noop */ }
+                      }}
+                      className="btn-brutal bg-[var(--cs-ink)] text-white px-3 py-1.5 text-xs font-semibold"
+                      data-testid={`recommended-join-${i}`}
+                    >
+                      Join →
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}

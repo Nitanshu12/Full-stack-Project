@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
+import CustomCursor from './components/CustomCursor';
+import { Toaster } from 'sonner';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Home from './pages/Home';
-import StudentDashboard from './pages/StudentDashboard';
-import MentorDashboard from './pages/MentorDashboard';
-import OrganizationDashboard from './pages/OrganizationDashboard';
+import Dashboard from './pages/Dashboard';
 import CreateProject from './pages/CreateProject';
 import DiscoverProjects from './pages/DiscoverProjects';
 import SmartMatches from './pages/SmartMatches';
@@ -39,92 +39,32 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-// Smart redirect: sends logged-in users to their role dashboard
 const DashboardRedirect = () => {
-    const { auth, getDashboardPath } = useAuth();
-    const role = auth.user?.role || 'STUDENT';
-    return <Navigate to={getDashboardPath(role)} replace />;
+    return <Navigate to="/dashboard" replace />;
 };
 
 function App() {
     return (
-        <Routes>
-            {/* Public routes */}
+        <>
+            <CustomCursor />
+            <Toaster position="top-center" richColors />
+            <Routes>
+                {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
 
-            {/* Legacy /dashboard redirect → role-based dashboard */}
+            {/* Dashboard route */}
             <Route
                 path="/dashboard"
                 element={
-                    <ProtectedRoute>
-                        <DashboardRedirect />
-                    </ProtectedRoute>
-                }
-            />
-
-            {/* ============ STUDENT ROUTES ============ */}
-            <Route
-                path="/student/dashboard"
-                element={
                     <RoleProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
-                        <StudentDashboard />
-                    </RoleProtectedRoute>
-                }
-            />
-            <Route
-                path="/student/create-project"
-                element={
-                    <RoleProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
-                        <CreateProject />
-                    </RoleProtectedRoute>
-                }
-            />
-            <Route
-                path="/student/discover-projects"
-                element={
-                    <RoleProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
-                        <DiscoverProjects />
-                    </RoleProtectedRoute>
-                }
-            />
-            <Route
-                path="/student/smart-matches"
-                element={
-                    <RoleProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
-                        <SmartMatches />
-                    </RoleProtectedRoute>
-                }
-            />
-            <Route
-                path="/student/mentors"
-                element={
-                    <RoleProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
-                        <Mentors />
+                        <Dashboard />
                     </RoleProtectedRoute>
                 }
             />
 
-            {/* ============ MENTOR ROUTES ============ */}
-            <Route
-                path="/mentor/dashboard"
-                element={
-                    <RoleProtectedRoute allowedRoles={['MENTOR', 'ADMIN']}>
-                        <MentorDashboard />
-                    </RoleProtectedRoute>
-                }
-            />
 
-            {/* ============ ORGANIZATION ROUTES ============ */}
-            <Route
-                path="/organization/dashboard"
-                element={
-                    <RoleProtectedRoute allowedRoles={['ORGANIZATION', 'ADMIN']}>
-                        <OrganizationDashboard />
-                    </RoleProtectedRoute>
-                }
-            />
 
             {/* ============ ADMIN ROUTES ============ */}
             <Route
@@ -170,12 +110,13 @@ function App() {
                 }
             />
 
-            {/* Legacy routes → redirect to student scoped versions */}
-            <Route path="/create-project" element={<Navigate to="/student/create-project" replace />} />
-            <Route path="/discover-projects" element={<Navigate to="/student/discover-projects" replace />} />
-            <Route path="/smart-matches" element={<Navigate to="/student/smart-matches" replace />} />
-            <Route path="/mentors" element={<Navigate to="/student/mentors" replace />} />
+            <Route path="/create-project" element={<CreateProject />} />
+            <Route path="/projects" element={<DiscoverProjects />} />
+            <Route path="/discover-projects" element={<DiscoverProjects />} />
+            <Route path="/smart-matches" element={<SmartMatches />} />
+            <Route path="/mentors" element={<Mentors />} />
         </Routes>
+        </>
     );
 }
 

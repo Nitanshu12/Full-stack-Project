@@ -1,15 +1,10 @@
-"""
-Tests for the CollabSphere AI Recommendation Engine
-"""
+
 
 import json
 import pytest
 from recommender import app, CollabRecommender
 
 
-# ─────────────────────────────────────────────
-#  Unit tests for CollabRecommender class
-# ─────────────────────────────────────────────
 
 class TestCollabRecommender:
     def setup_method(self):

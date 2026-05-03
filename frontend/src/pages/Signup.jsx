@@ -1,349 +1,113 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import Logo from '../assets/Logo.png';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import { Sphere, GoogleLogo, ArrowRight } from "@phosphor-icons/react";
 
-const ROLES = [
-    { key: 'STUDENT', label: 'Student' },
-    { key: 'MENTOR', label: 'Mentor' },
-    { key: 'ORGANIZATION', label: 'Organization' }
-];
+// REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+function startGoogleLogin() {
+  const redirectUrl = window.location.origin + "/dashboard";
+  window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+}
 
-const Signup = () => {
-    const [selectedRole, setSelectedRole] = useState('STUDENT');
-    const [data, setData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        skills:[],
-        Interset:[],
-        // Mentor fields
-        expertise: "",
-        bio: "",
-        availability: "",
-        // Organization fields
-        orgName: "",
-        orgDescription: "",
-        website: ""
-    });
-    const [error, setError] = useState("");
-    const { signup, loginWithGoogle, getDashboardPath } = useAuth();
-    const navigate = useNavigate();
+export default function Signup() {
+  const { signup } = useAuth();
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
-    };
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (password.length < 6) { toast.error("Password must be ≥ 6 chars"); return; }
+    setLoading(true);
+    try {
+      // By default this new design form registers a 'STUDENT'. 
+      // Existing logic needed a role, passing "STUDENT" explicitly.
+      const result = await signup(name.trim(), email.trim().toLowerCase(), password, "STUDENT", {});
+      
+      if (result && !result.success) {
+        toast.error(result.message || "Signup failed");
+      } else {
+        toast.success("Account created. Let's build.");
+        navigate("/login");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.response?.data?.detail || "Signup failed");
+    } finally { setLoading(false); }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+  return (
+    <div className="min-h-screen grid md:grid-cols-2">
+      <div className="p-8 md:p-16 flex flex-col justify-center">
+        <Link to="/" className="flex items-center gap-2 mb-12" data-testid="register-logo-link">
+          <div className="w-9 h-9 grid place-items-center bg-[var(--cs-ink)] text-white"><Sphere weight="duotone" size={22} /></div>
+          <span className="font-display text-xl tracking-tighter">CollabSphere</span>
+        </Link>
+        <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">claim your seat</div>
+        <h1 className="font-display text-5xl sm:text-6xl tracking-tighter mt-3" data-testid="register-heading">Create your profile.</h1>
+        <p className="mt-3 text-muted-ink max-w-sm">30 seconds. Then we'll AI-match you to 3 projects you'll actually love.</p>
 
-        try {
-            const extraFields = {};
-            if (selectedRole === 'MENTOR') {
-                extraFields.expertise = data.expertise ? data.expertise.split(',').map(s => s.trim()) : [];
-                extraFields.bio = data.bio;
-                extraFields.availability = data.availability;
-            }
-            if (selectedRole === 'ORGANIZATION') {
-                extraFields.orgName = data.orgName;
-                extraFields.orgDescription = data.orgDescription;
-                extraFields.website = data.website;
-            }
+        <button
+          type="button"
+          onClick={startGoogleLogin}
+          data-testid="register-google-btn"
+          className="mt-10 w-full max-w-md btn-brutal bg-white px-5 py-3.5 font-semibold flex items-center justify-center gap-3"
+        >
+          <GoogleLogo size={20} weight="bold" /> Sign up with Google
+        </button>
 
-            const res = await signup(data.name, data.email, data.password, selectedRole, extraFields);
-            if (res.success) {
-                navigate('/login');
-            } else {
-                setError(res.message || "Signup failed");
-            }
-        } catch (err) {
-            setError(err.response?.data?.message || "An error occurred");
-        }
-    };
-
-    const handleGoogleSignIn = async () => {
-        try {
-            setError("");
-            const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-            if (!clientId) {
-                setError("Google sign-in is not configured.");
-                return;
-            }
-
-            if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-                await new Promise((resolve, reject) => {
-                    const existingScript = document.getElementById('google-identity-script');
-                    if (existingScript) {
-                        existingScript.onload = () => resolve();
-                        existingScript.onerror = () => reject(new Error('Failed to load Google script'));
-                        return;
-                    }
-                    const script = document.createElement('script');
-                    script.src = 'https://accounts.google.com/gsi/client';
-                    script.async = true;
-                    script.defer = true;
-                    script.id = 'google-identity-script';
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error('Failed to load Google script'));
-                    document.body.appendChild(script);
-                });
-            }
-
-            await new Promise((resolve, reject) => {
-                try {
-                    window.google.accounts.id.initialize({
-                        client_id: clientId,
-                        callback: async (response) => {
-                            try {
-                                const idToken = response.credential;
-                                const res = await loginWithGoogle(idToken);
-                                if (res.success) {
-                                    const role = res.data?.user?.role || 'STUDENT';
-                                    navigate(getDashboardPath(role));
-                                } else {
-                                    setError(res.message || "Google signup failed");
-                                }
-                            } catch (err) {
-                                setError(err.response?.data?.message || "Google signup failed");
-                            } finally {
-                                resolve();
-                            }
-                        }
-                    });
-                    window.google.accounts.id.prompt();
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        } catch (e) {
-            setError("Google sign-in is currently unavailable.");
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-white">
-            <header className="px-6 md:px-12 py-6">
-                <div className="flex items-center gap-2">
-                    <img 
-                        src={Logo} 
-                        alt="CollabSphere Logo" 
-                        className="h-10 w-10 object-contain"
-                    />
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900">COLLABSPHERE</h1>
-                        <p className="text-xs text-gray-600">Your Global Hub for Innovation</p>
-                    </div>
-                </div>
-            </header>
-
-            <div className="flex items-center justify-center px-4 py-8 md:py-12">
-                <div className="w-full max-w-md">
-                    <div className="bg-gradient-to-b from-purple-800 to-blue-600 rounded-2xl p-8 md:p-10 shadow-2xl">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 text-center uppercase tracking-wide">
-                            JOIN US
-                        </h2>
-
-                        {/* Role Selection Tabs */}
-                        <div className="flex rounded-xl overflow-hidden mb-6 bg-white/10 p-1 gap-1">
-                            {ROLES.map((role) => (
-                                <button
-                                    key={role.key}
-                                    type="button"
-                                    onClick={() => setSelectedRole(role.key)}
-                                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                                        selectedRole === role.key
-                                            ? 'bg-white text-purple-700 shadow-md'
-                                            : 'text-white/80 hover:text-white hover:bg-white/10'
-                                    }`}
-                                >
-                                    {role.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {error && (
-                            <div className="bg-red-500/20 border border-red-300 text-red-100 px-4 py-2 rounded-lg mb-6 text-sm text-center">
-                                {error}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-white font-medium mb-2">Name:</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={data.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your name"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-white font-medium mb-2">Email:</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={data.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your email"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-white font-medium mb-2">Password:</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your password"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-white font-medium mb-2">Skills:</label>
-                                <input
-                                    type="text"
-                                    name="skills"
-                                    value={data.skills}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your skills"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-white font-medium mb-2">Interests</label>
-                                <input
-                                    type="text"
-                                    name="interests"
-                                    value={data.interests}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                    placeholder="Enter your interests"
-                                />
-                            </div>
-
-                            {/* Mentor-specific fields */}
-                            {selectedRole === 'MENTOR' && (
-                                <>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Expertise (comma-separated):</label>
-                                        <input
-                                            type="text"
-                                            name="expertise"
-                                            value={data.expertise}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                            placeholder="e.g. React, Node.js, AWS"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Bio:</label>
-                                        <textarea
-                                            name="bio"
-                                            value={data.bio}
-                                            onChange={handleChange}
-                                            rows="2"
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
-                                            placeholder="Tell us about yourself"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Availability:</label>
-                                        <input
-                                            type="text"
-                                            name="availability"
-                                            value={data.availability}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                            placeholder="e.g. Weekdays 6-8 PM"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Organization-specific fields */}
-                            {selectedRole === 'ORGANIZATION' && (
-                                <>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Organization Name:</label>
-                                        <input
-                                            type="text"
-                                            name="orgName"
-                                            value={data.orgName}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                            placeholder="Enter organization name"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Description:</label>
-                                        <textarea
-                                            name="orgDescription"
-                                            value={data.orgDescription}
-                                            onChange={handleChange}
-                                            rows="2"
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
-                                            placeholder="Describe your organization"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white font-medium mb-2">Website:</label>
-                                        <input
-                                            type="url"
-                                            name="website"
-                                            value={data.website}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                                            placeholder="https://example.com"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all active:scale-98"
-                            >
-                                Sign Up as {ROLES.find(r => r.key === selectedRole)?.label}
-                            </button>
-                        </form>
-
-                        <button
-                            type="button"
-                            onClick={handleGoogleSignIn}
-                            className="w-full mt-4 py-3 bg-white text-gray-900 font-bold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <span>Sign in with Google</span>
-                            <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
-                        </button>
-
-                        <div className="mt-6 text-center text-white text-sm">
-                            Already have an account?{' '}
-                            <Link to="/login" className="text-blue-200 hover:text-blue-100 font-semibold underline">
-                                Login
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="flex items-center gap-4 max-w-md my-6">
+          <div className="h-px bg-[var(--cs-ink)] flex-1" />
+          <span className="font-mono-cs text-[10px] tracking-[0.25em] uppercase text-muted-ink">or email</span>
+          <div className="h-px bg-[var(--cs-ink)] flex-1" />
         </div>
-    );
-};
 
-export default Signup;
+        <form onSubmit={onSubmit} className="max-w-md space-y-4">
+          <label className="block">
+            <span className="font-mono-cs text-[10px] tracking-[0.2em] uppercase">Name</span>
+            <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
+              data-testid="register-name-input"
+              className="mt-2 w-full px-4 py-3 bg-white border-2 border-[var(--cs-ink)] focus:outline-none focus:shadow-brutal-blue"
+              placeholder="Your full name" />
+          </label>
+          <label className="block">
+            <span className="font-mono-cs text-[10px] tracking-[0.2em] uppercase">Email</span>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+              data-testid="register-email-input"
+              className="mt-2 w-full px-4 py-3 bg-white border-2 border-[var(--cs-ink)] focus:outline-none focus:shadow-brutal-blue"
+              placeholder="you@college.edu" />
+          </label>
+          <label className="block">
+            <span className="font-mono-cs text-[10px] tracking-[0.2em] uppercase">Password</span>
+            <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+              data-testid="register-password-input"
+              className="mt-2 w-full px-4 py-3 bg-white border-2 border-[var(--cs-ink)] focus:outline-none focus:shadow-brutal-blue"
+              placeholder="min. 6 characters" />
+          </label>
+          <button type="submit" disabled={loading} data-testid="register-submit-btn"
+            className="w-full btn-brutal bg-[var(--cs-primary)] text-white px-5 py-3.5 font-semibold inline-flex items-center justify-center gap-2">
+            {loading ? "Creating…" : (<>Create my profile <ArrowRight size={18} /></>)}
+          </button>
+        </form>
+
+        <div className="mt-6 text-sm">
+          Already have an account? <Link to="/login" className="font-bold underline underline-offset-4 decoration-[var(--cs-primary)]" data-testid="register-to-login">Log in</Link>
+        </div>
+      </div>
+
+      <div className="hidden md:block relative bg-[var(--cs-yellow)] overflow-hidden">
+        <div className="absolute inset-0 grain" />
+        <div className="relative h-full p-16 flex flex-col justify-end">
+          <div className="font-display text-5xl tracking-tighter leading-[0.95]">
+            3 projects. <br/>Zero guessing. <br/><span className="italic gradient-text">One AI</span> that gets you.
+          </div>
+          <div className="mt-6 font-mono-cs text-xs tracking-[0.25em] uppercase">Powered by Groq · Llama 3.3 70B</div>
+        </div>
+        <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-[var(--cs-primary)] border-2 border-[var(--cs-ink)] -rotate-6" />
+        <div className="absolute top-20 right-20 w-32 h-32 border-2 border-[var(--cs-ink)] rotate-12" />
+      </div>
+    </div>
+  );
+}
