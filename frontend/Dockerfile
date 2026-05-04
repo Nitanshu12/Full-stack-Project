@@ -1,13 +1,4 @@
-# ─────────────────────────────────────────────────────────────
-# CollabSphere Frontend — Production Dockerfile
-# Multi-stage build:
-#   Stage 1 → Node  : builds the Vite/React app (npm run build)
-#   Stage 2 → Nginx : serves the static files with a lightweight server
-# ─────────────────────────────────────────────────────────────
 
-# ── Stage 1: Builder ─────────────────────────────────────────
-# Full Node environment — needed to compile the React/Vite app.
-# This stage is DISCARDED after the build; it never ships in the final image.
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -25,9 +16,6 @@ COPY . .
 # Build the production-optimised static bundle into /app/dist
 RUN npm run build
 
-# ── Stage 2: Production Server ────────────────────────────────
-# Minimal nginx image — tiny footprint, fast startup.
-# Contains ONLY the built static files; no Node, no source code.
 FROM nginx:alpine AS production
 
 # Copy the compiled static files from the builder stage
