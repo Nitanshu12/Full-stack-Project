@@ -1,23 +1,4 @@
-# ─────────────────────────────────────────────────────────────
-# OUTPUTS
-#
-# Values printed in the terminal after "terraform apply" finishes.
-# These tell you WHERE your infrastructure lives so you can:
-#   - Know which ECR URL to push Docker images to
-#   - Reference the ECS cluster in future Terraform configs
-#   - Verify which AWS account and region was used
-#
-# View outputs anytime (without re-applying) with:
-#   terraform output
-# ─────────────────────────────────────────────────────────────
 
-# ── Backend ECR Repository URL ────────────────────────────────
-# The full URL needed to push/pull backend Docker images.
-# Format: <account_id>.dkr.ecr.<region>.amazonaws.com/collabsphere-backend
-#
-# Usage after terraform apply:
-#   docker tag collabsphere-backend:latest <this_url>:latest
-#   docker push <this_url>:latest
 output "backend_ecr_url" {
   description = "Full URL of the ECR repository for the backend Docker image"
   value       = aws_ecr_repository.backend.repository_url
