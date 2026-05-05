@@ -1,9 +1,7 @@
-# Fetch the default VPC so we don't have to create one from scratch
 data "aws_vpc" "default" {
   default = true
 }
 
-# Fetch the subnets for the default VPC
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -11,7 +9,6 @@ data "aws_subnets" "default" {
   }
 }
 
-# Create a Security Group to allow traffic to Frontend (80) and Backend (8080)
 resource "aws_security_group" "ecs_sg" {
   name        = "${var.app_name}-ecs-sg"
   description = "Allow inbound traffic for frontend and backend"
@@ -48,17 +45,12 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-# ════════════════════════════════════════════════════════
-# FRONTEND: Task Definition & Service
-# ════════════════════════════════════════════════════════
 resource "aws_ecs_task_definition" "frontend" {
   family                   = "${var.app_name}-frontend-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256" # 0.25 vCPU
-  memory                   = "512" # 512 MB
-  
-  # Uses the standard LabRole provided by AWS Learner Labs
+  cpu                      = "256"
+  memory                   = "512"
   execution_role_arn       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
   task_role_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 
@@ -89,17 +81,12 @@ resource "aws_ecs_service" "frontend" {
   }
 }
 
-# ════════════════════════════════════════════════════════
-# BACKEND: Task Definition & Service
-# ════════════════════════════════════════════════════════
 resource "aws_ecs_task_definition" "backend" {
   family                   = "${var.app_name}-backend-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256" # 0.25 vCPU
-  memory                   = "512" # 512 MB
-  
-  # Uses the standard LabRole provided by AWS Learner Labs
+  cpu                      = "256"
+  memory                   = "512"
   execution_role_arn       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
   task_role_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 

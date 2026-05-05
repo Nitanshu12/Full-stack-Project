@@ -1,4 +1,3 @@
-# Fetches the current AWS account ID — used in outputs.tf
 data "aws_caller_identity" "current" {}
 
 resource "aws_ecr_repository" "backend" {
