@@ -77,7 +77,7 @@ app.use("/api/mentor", mentorRouter)
 app.use("/api/organization", organizationRouter)
 app.use("/api/admin", adminRouter)
 
-const PORT = 8080 || process.env.PORT
+const PORT = process.env.PORT || 8080
 
 
 connectDB().then(() => {
