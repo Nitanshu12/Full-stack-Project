@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuth from './hooks/useAuth';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
-import CustomCursor from './components/CustomCursor';
 import { Toaster } from 'sonner';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
@@ -46,7 +45,6 @@ const DashboardRedirect = () => {
 function App() {
     return (
         <>
-            <CustomCursor />
             <Toaster position="top-center" richColors />
             <Routes>
                 {/* Public routes */}

@@ -2,17 +2,17 @@
 @import "tailwindcss";
 
 :root {
-  --cs-bg: #FAFAF7;
+  --cs-bg: #F6F3EC;
   --cs-surface: #FFFFFF;
-  --cs-ink: #0A0A0A;
-  --cs-muted: #525252;
-  --cs-border: #E5E5E5;
-  --cs-hard: #0A0A0A;
-  --cs-primary: #0033FF;
-  --cs-primary-hover: #0029CC;
-  --cs-orange: #FF4F00;
-  --cs-yellow: #DFFF00;
-  --cs-pink: #FF00FF;
+  --cs-ink: #16182B;
+  --cs-muted: #5C594E;
+  --cs-border: #E3DFD3;
+  --cs-hard: #16182B;
+  --cs-primary: #3B4A8C;
+  --cs-primary-hover: #2E3A6E;
+  --cs-orange: #BD5B2C;
+  --cs-yellow: #D6A24A;
+  --cs-pink: #7C5580;
 }
 
 @layer base {
@@ -54,16 +54,6 @@ html, body, #root {
 
 body {
   margin: 0;
-  cursor: none;
-}
-
-@media (max-width: 900px) {
-  body { cursor: auto; }
-}
-
-a, button, [role="button"], input, textarea, select { cursor: none; }
-@media (max-width: 900px) {
-  a, button, [role="button"], input, textarea, select { cursor: pointer; }
 }
 
 /* Typography helpers */
@@ -95,39 +85,13 @@ a, button, [role="button"], input, textarea, select { cursor: none; }
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* Animated gradient text */
+/* Accent text — solid, not an animated rainbow */
 .gradient-text {
-  background: linear-gradient(90deg, #0033FF, #FF4F00, #FF00FF, #0033FF);
-  background-size: 300% 100%;
+  background: linear-gradient(100deg, var(--cs-primary), var(--cs-orange));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: gradient-shift 8s linear infinite;
 }
-@keyframes gradient-shift {
-  from { background-position: 0% 50%; }
-  to { background-position: 300% 50%; }
-}
-
-/* Marquee */
-.marquee { display: flex; gap: 3rem; animation: marquee 40s linear infinite; }
-@keyframes marquee { to { transform: translateX(-50%); } }
-
-/* Custom cursor */
-.cs-cursor {
-  position: fixed;
-  top: 0; left: 0;
-  width: 18px; height: 18px;
-  background: var(--cs-ink);
-  border-radius: 50%;
-  pointer-events: none;
-  mix-blend-mode: difference;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 160ms ease, height 160ms ease, background 160ms ease;
-}
-.cs-cursor.is-hover { width: 48px; height: 48px; background: #DFFF00; }
-@media (max-width: 900px) { .cs-cursor { display: none; } }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -155,35 +119,10 @@ a, button, [role="button"], input, textarea, select { cursor: none; }
 }
 .sheen:hover::after { transform: translateX(120%); }
 
-/* Tracing beam card (for AI-recommended) */
+/* Recommended-item card — a calm accent border, no spinning rainbow */
 .ai-card {
   position: relative;
-  isolation: isolate;
-}
-.ai-card::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  background: conic-gradient(from var(--angle, 0deg), #0033FF, #FF4F00, #DFFF00, #FF00FF, #0033FF);
-  z-index: -1;
-  border-radius: inherit;
-  animation: spin-border 6s linear infinite;
-}
-.ai-card::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  background: var(--cs-surface);
-  border-radius: inherit;
-  z-index: -1;
-}
-@property --angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-@keyframes spin-border {
-  to { --angle: 360deg; }
+  border-left: 3px solid var(--cs-primary) !important;
 }
 
 /* Spotlight */
