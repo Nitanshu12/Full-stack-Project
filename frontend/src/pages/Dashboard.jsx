@@ -149,8 +149,8 @@ export default function Dashboard() {
             <div>
               <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase inline-flex items-center gap-2">
                 <Sparkle size={12} weight="fill" className="text-[var(--cs-primary)]" />
-                <span className="gradient-text font-bold">AI-POWERED</span>
-                <span className="text-muted-ink">· groq llama 3.3</span>
+                <span className="gradient-text font-bold">Matched for you</span>
+                <span className="text-muted-ink">· skill-similarity scoring</span>
               </div>
               <h2 className="font-display text-3xl sm:text-4xl tracking-tighter mt-1" data-testid="recommended-heading">Recommended projects for you.</h2>
               {rec.reasoning && <p className="text-muted-ink text-sm mt-2 max-w-2xl">"{rec.reasoning}"</p>}

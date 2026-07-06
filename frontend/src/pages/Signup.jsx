@@ -2,13 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
-import { Sphere, GoogleLogo, ArrowRight } from "@phosphor-icons/react";
-
-// REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-function startGoogleLogin() {
-  const redirectUrl = window.location.origin + "/dashboard";
-  window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-}
+import { Sphere, ArrowRight } from "@phosphor-icons/react";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -49,14 +44,7 @@ export default function Signup() {
         <h1 className="font-display text-5xl sm:text-6xl tracking-tighter mt-3" data-testid="register-heading">Create your profile.</h1>
         <p className="mt-3 text-muted-ink max-w-sm">30 seconds. Then we'll AI-match you to 3 projects you'll actually love.</p>
 
-        <button
-          type="button"
-          onClick={startGoogleLogin}
-          data-testid="register-google-btn"
-          className="mt-10 w-full max-w-md btn-brutal bg-white px-5 py-3.5 font-semibold flex items-center justify-center gap-3"
-        >
-          <GoogleLogo size={20} weight="bold" /> Sign up with Google
-        </button>
+        <GoogleAuthButton testId="register-google-btn" label="Sign up with Google" />
 
         <div className="flex items-center gap-4 max-w-md my-6">
           <div className="h-px bg-[var(--cs-ink)] flex-1" />
@@ -101,9 +89,9 @@ export default function Signup() {
         <div className="absolute inset-0 grain" />
         <div className="relative h-full p-16 flex flex-col justify-end">
           <div className="font-display text-5xl tracking-tighter leading-[0.95]">
-            3 projects. <br/>Zero guessing. <br/><span className="italic gradient-text">One AI</span> that gets you.
+            Matched projects. <br/>Not <span className="italic gradient-text">keyword search</span>.
           </div>
-          <div className="mt-6 font-mono-cs text-xs tracking-[0.25em] uppercase">Powered by Groq · Llama 3.3 70B</div>
+          <div className="mt-6 font-mono-cs text-xs tracking-[0.25em] uppercase">Skill-similarity matching, scored per project</div>
         </div>
         <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-[var(--cs-primary)] border-2 border-[var(--cs-ink)] -rotate-6" />
         <div className="absolute top-20 right-20 w-32 h-32 border-2 border-[var(--cs-ink)] rotate-12" />

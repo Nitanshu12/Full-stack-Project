@@ -262,9 +262,9 @@ export default function CreateProject() {
                     <div className="border-2 border-[var(--cs-ink)] bg-[var(--cs-bg)] p-4">
                       <div className="font-mono-cs text-[10px] tracking-[0.22em] uppercase text-[var(--cs-primary)]">ready to launch</div>
                       <div className="mt-1 text-sm">
-                        {isEditMode 
-                          ? "Tap Update project to save your changes." 
-                          : "Tap Launch project to go live. Your teammates are already waiting."}
+                        {isEditMode
+                          ? "Tap Update project to save your changes."
+                          : "Tap Launch project to publish it to discovery and matched recommendations."}
                       </div>
                     </div>
                   </motion.div>

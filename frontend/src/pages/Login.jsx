@@ -2,13 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
-import { Sphere, GoogleLogo, ArrowRight } from "@phosphor-icons/react";
-
-// REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-function startGoogleLogin() {
-  const redirectUrl = window.location.origin + "/dashboard";
-  window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-}
+import { Sphere, ArrowRight } from "@phosphor-icons/react";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 export default function Login() {
   const { login } = useAuth();
@@ -46,14 +41,7 @@ export default function Login() {
         <h1 className="font-display text-5xl sm:text-6xl tracking-tighter mt-3" data-testid="login-heading">Log in.</h1>
         <p className="mt-3 text-muted-ink max-w-sm">Pick up where you left off. Your matches got smarter overnight.</p>
 
-        <button
-          type="button"
-          onClick={startGoogleLogin}
-          data-testid="login-google-btn"
-          className="mt-10 w-full max-w-md btn-brutal bg-white px-5 py-3.5 font-semibold flex items-center justify-center gap-3"
-        >
-          <GoogleLogo size={20} weight="bold" /> Continue with Google
-        </button>
+        <GoogleAuthButton testId="login-google-btn" label="Continue with Google" />
 
         <div className="flex items-center gap-4 max-w-md my-6">
           <div className="h-px bg-[var(--cs-ink)] flex-1" />
@@ -100,15 +88,11 @@ export default function Login() {
         <div className="absolute inset-0 dot-grid opacity-20" />
         <div className="absolute top-10 left-10 right-10 font-mono-cs text-[10px] tracking-[0.25em] uppercase text-white/60">Live · ops.collabsphere</div>
         <div className="relative h-full p-16 flex flex-col justify-end">
-          <div className="font-display text-5xl tracking-tighter leading-[0.95]">
-            "I matched with my co-founder <span className="gradient-text">on day two</span>. Shipped our MVP in three weeks."
+          <div className="font-display text-4xl sm:text-5xl tracking-tighter leading-[0.95]">
+            Post a project. Get matched by <span className="gradient-text">actual skill fit</span>. Build with people who can help.
           </div>
-          <div className="mt-6 flex items-center gap-3">
-            <img src="https://i.pravatar.cc/60?img=32" alt="" className="w-10 h-10 border border-white" />
-            <div>
-              <div className="font-bold">Priya M.</div>
-              <div className="text-white/60 text-sm">CS '26 · shipped Lyra</div>
-            </div>
+          <div className="mt-6 font-mono-cs text-xs tracking-[0.25em] uppercase text-white/60">
+            skill-match scoring · mentor network · live project feed
           </div>
         </div>
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-[var(--cs-yellow)] rotate-12" />

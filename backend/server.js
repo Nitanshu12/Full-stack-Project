@@ -82,7 +82,9 @@ const PORT = process.env.PORT || 8080
 
 connectDB().then(() => {
     app.listen(PORT, () => {
-        console.log("connnect to DB")
         console.log("Server is running " + PORT)
     })
+}).catch((err) => {
+    console.error("Failed to connect to database, exiting:", err.message)
+    process.exit(1)
 })
